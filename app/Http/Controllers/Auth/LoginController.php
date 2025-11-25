@@ -100,7 +100,7 @@ class LoginController extends Controller
         }
 
         // Buscar dados do cache
-        $loginData = cache()->pull('login_token_' . $token);
+        $loginData = \Illuminate\Support\Facades\Cache::pull('login_token_' . $token);
         
         if (!$loginData) {
             Log::warning('Token de auto-login não encontrado ou expirado', ['token' => $token]);
