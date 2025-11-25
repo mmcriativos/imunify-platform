@@ -77,18 +77,26 @@ class RegisterTenantController extends Controller
 
             DB::commit();
 
-            // Login automático
-            Auth::login($user);
+            Log::info('Tenant criado com sucesso', [
+                'tenant_id' => $tenant->id,
+                'domain' => $tenant->domains->first()->domain
+            ]);
 
-            // Email de boas-vindas (TODO: criar mailable)
-            // Mail::to($user->email)->queue(new WelcomeClinic($tenant, $user));
+            // Criar token temporário para login automático no subdomínio
+            $loginToken = Str::random(60);
+            cache()->put('login_token_' . $loginToken, [
+                'tenant_id' => $tenant->id,
+                'user_email' => $user->email,
+            ], now()->addMinutes(5));
 
-            // Redirecionar para dashboard da clínica
+            // Redirecionar para dashboard da clínica com token
             $domain = $tenant->domains->first()->domain;
+            $protocol = env('APP_ENV') === 'local' ? 'http://' : 'https://';
+            $redirectUrl = $protocol . $domain . '/auto-login?token=' . $loginToken;
             
-            return redirect()
-                ->away('http://' . $domain . '/dashboard')
-                ->with('success', 'Bem-vindo ao Imunify! Sua clínica foi criada com sucesso. Trial de 7 dias ativado.');
+            Log::info('Redirecionando para', ['url' => $redirectUrl]);
+            
+            return redirect()->away($redirectUrl);
 
         } catch (\Exception $e) {
             DB::rollBack();

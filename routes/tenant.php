@@ -46,6 +46,9 @@ Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [LoginController::class, 'login']);
 Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 
+// Auto-login após registro de tenant
+Route::get('/auto-login', [LoginController::class, 'autoLogin'])->name('auto.login');
+
 // Webhook WhatsApp (PÚBLICO - Z-API precisa acessar no contexto do tenant)
 Route::post('/webhook/whatsapp', [WhatsAppWebhookController::class, 'receberResposta'])->name('webhook.whatsapp');
 Route::get('/webhook/whatsapp/teste', [WhatsAppWebhookController::class, 'teste'])->name('webhook.whatsapp.teste');
