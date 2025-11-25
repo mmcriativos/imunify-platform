@@ -59,23 +59,36 @@ class RegisterTenantController extends Controller
 
         try {
             DB::beginTransaction();
+            Log::info('=== INÍCIO DO REGISTRO DE TENANT ===');
 
             // Criar Tenant
+            Log::info('1. Criando tenant...');
             $tenant = $this->createTenant($request);
+            Log::info('✓ Tenant criado', ['tenant_id' => $tenant->id]);
 
             // Criar Domínio
+            Log::info('2. Criando domínio...');
             $this->createDomain($tenant, $request->subdomain);
+            Log::info('✓ Domínio criado');
 
             // Inicializar contexto do tenant
+            Log::info('3. Inicializando tenancy...');
             tenancy()->initialize($tenant);
+            Log::info('✓ Tenancy inicializado');
 
             // Criar usuário admin
+            Log::info('4. Criando usuário admin...');
             $user = $this->createAdminUser($request);
+            Log::info('✓ Usuário criado', ['user_id' => $user->id]);
 
             // Popular dados iniciais
+            Log::info('5. Populando dados iniciais...');
             $this->seedInitialData($tenant);
+            Log::info('✓ Dados populados');
 
+            Log::info('6. Fazendo commit da transação...');
             DB::commit();
+            Log::info('✓ Commit realizado');
 
             Log::info('Tenant criado com sucesso', [
                 'tenant_id' => $tenant->id,
@@ -83,6 +96,7 @@ class RegisterTenantController extends Controller
             ]);
 
             // Criar token temporário para login automático no subdomínio
+            Log::info('7. Criando token de auto-login...');
             $loginToken = Str::random(60);
             
             // Usar cache store direto (bypassa CacheManager do Tenancy)
@@ -90,20 +104,23 @@ class RegisterTenantController extends Controller
                 'tenant_id' => $tenant->id,
                 'user_email' => $user->email,
             ], now()->addMinutes(5));
+            Log::info('✓ Token criado');
 
             // Redirecionar para dashboard da clínica com token
             $domain = $tenant->domains->first()->domain;
             $protocol = env('APP_ENV') === 'local' ? 'http://' : 'https://';
             $redirectUrl = $protocol . $domain . '/auto-login?token=' . $loginToken;
             
-            Log::info('Redirecionando para', ['url' => $redirectUrl]);
+            Log::info('8. Redirecionando para', ['url' => $redirectUrl]);
             
             return redirect()->away($redirectUrl);
 
         } catch (\Exception $e) {
             DB::rollBack();
             
-            Log::error('Erro ao criar tenant: ' . $e->getMessage(), [
+            Log::error('❌ ERRO ao criar tenant: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
                 'trace' => $e->getTraceAsString()
             ]);
             
