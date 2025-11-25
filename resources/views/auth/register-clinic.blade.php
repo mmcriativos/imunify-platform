@@ -291,16 +291,19 @@
                                     <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
                                         <i class="fas fa-link text-gray-400 text-sm"></i>
                                     </div>
-                                    <input type="text" name="subdomain" value="{{ old('subdomain') }}" 
+                                    <input type="text" id="subdomain" name="subdomain" value="{{ old('subdomain') }}" 
                                            class="w-full pl-11 pr-4 py-3 border border-gray-300 rounded-xl focus:border-primary-500 focus:ring-2 focus:ring-primary-100 transition lowercase @error('subdomain') border-red-500 @enderror" 
                                            placeholder="suaclinica"
                                            pattern="[a-z0-9-]+"
                                            required>
+                                    <div class="absolute inset-y-0 right-0 pr-3.5 flex items-center pointer-events-none">
+                                        <div id="subdomain-status" class="hidden"></div>
+                                    </div>
                                 </div>
-                                <p class="text-xs text-gray-500 mt-1.5 flex items-center gap-1">
-                                    <i class="fas fa-info-circle"></i>
-                                    Seu endereço será: <strong class="text-primary-600">suaclinica.imunify.com.br</strong>
-                                </p>
+                                <div id="subdomain-message" class="text-xs mt-1.5 flex items-center gap-1">
+                                    <i class="fas fa-info-circle text-gray-500"></i>
+                                    <span class="text-gray-500">Seu endereço será: <strong id="subdomain-preview" class="text-primary-600">suaclinica.imunify.com.br</strong></span>
+                                </div>
                                 @error('subdomain')
                                     <p class="text-red-500 text-sm mt-1.5 flex items-center gap-1">
                                         <i class="fas fa-exclamation-circle text-xs"></i> {{ $message }}
@@ -503,10 +506,102 @@
             });
         }
 
-        // Subdomínio lowercase
-        document.querySelector('input[name="subdomain"]')?.addEventListener('input', function(e) {
-            this.value = this.value.toLowerCase().replace(/[^a-z0-9-]/g, '');
+        // Verificação de disponibilidade de subdomínio
+        const subdomainInput = document.getElementById('subdomain');
+        const subdomainMessage = document.getElementById('subdomain-message');
+        const subdomainPreview = document.getElementById('subdomain-preview');
+        const subdomainStatus = document.getElementById('subdomain-status');
+        let checkTimeout;
+
+        subdomainInput?.addEventListener('input', function(e) {
+            // Limpar e formatar
+            let value = this.value.toLowerCase().replace(/[^a-z0-9-]/g, '');
+            this.value = value;
+            
+            // Atualizar preview
+            if (value) {
+                subdomainPreview.textContent = value + '.imunify.com.br';
+            } else {
+                subdomainPreview.textContent = 'suaclinica.imunify.com.br';
+            }
+
+            // Limpar timeout anterior
+            clearTimeout(checkTimeout);
+            
+            // Resetar visual
+            this.classList.remove('border-green-500', 'border-red-500', 'pr-12');
+            subdomainStatus.innerHTML = '';
+            subdomainStatus.classList.add('hidden');
+
+            // Se tiver pelo menos 3 caracteres, verificar
+            if (value.length >= 3) {
+                // Mostrar loading
+                subdomainStatus.innerHTML = '<i class="fas fa-spinner fa-spin text-gray-400"></i>';
+                subdomainStatus.classList.remove('hidden');
+                this.classList.add('pr-12');
+
+                // Aguardar 500ms antes de verificar (debounce)
+                checkTimeout = setTimeout(() => {
+                    checkSubdomainAvailability(value);
+                }, 500);
+            } else if (value.length > 0) {
+                showSubdomainMessage('info', 'Digite pelo menos 3 caracteres');
+            } else {
+                showSubdomainMessage('default', 'Seu endereço será: <strong id="subdomain-preview" class="text-primary-600">suaclinica.imunify.com.br</strong>');
+            }
         });
+
+        function checkSubdomainAvailability(subdomain) {
+            fetch('{{ route("check.subdomain") }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                },
+                body: JSON.stringify({ subdomain: subdomain })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.available) {
+                    // Disponível
+                    subdomainInput.classList.remove('border-red-500');
+                    subdomainInput.classList.add('border-green-500');
+                    subdomainStatus.innerHTML = '<i class="fas fa-check-circle text-green-500"></i>';
+                    showSubdomainMessage('success', '✓ Disponível! Seu endereço será: <strong class="text-green-600">' + subdomain + '.imunify.com.br</strong>');
+                } else {
+                    // Não disponível
+                    subdomainInput.classList.remove('border-green-500');
+                    subdomainInput.classList.add('border-red-500');
+                    subdomainStatus.innerHTML = '<i class="fas fa-times-circle text-red-500"></i>';
+                    showSubdomainMessage('error', '✗ Este subdomínio já está em uso. Tente outro.');
+                }
+            })
+            .catch(error => {
+                console.error('Erro ao verificar subdomínio:', error);
+                subdomainStatus.innerHTML = '<i class="fas fa-exclamation-triangle text-yellow-500"></i>';
+                showSubdomainMessage('warning', 'Não foi possível verificar. Tente novamente.');
+            });
+        }
+
+        function showSubdomainMessage(type, message) {
+            const icons = {
+                'default': '<i class="fas fa-info-circle text-gray-500"></i>',
+                'info': '<i class="fas fa-info-circle text-blue-500"></i>',
+                'success': '<i class="fas fa-check-circle text-green-500"></i>',
+                'error': '<i class="fas fa-times-circle text-red-500"></i>',
+                'warning': '<i class="fas fa-exclamation-triangle text-yellow-500"></i>'
+            };
+
+            const colors = {
+                'default': 'text-gray-500',
+                'info': 'text-blue-600',
+                'success': 'text-green-600',
+                'error': 'text-red-600',
+                'warning': 'text-yellow-600'
+            };
+
+            subdomainMessage.innerHTML = icons[type] + '<span class="' + colors[type] + '">' + message + '</span>';
+        }
     </script>
 </body>
 </html>
