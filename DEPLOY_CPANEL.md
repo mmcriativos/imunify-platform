@@ -1,5 +1,16 @@
 # Deploy Imunify - cPanel TurboCloud
 
+## ⚡ Deploy Rápido (Após Primeira Configuração)
+
+```bash
+cd ~/repositories/imunify-platform
+bash deploy_and_clear.sh
+```
+
+Depois acesse: https://imunify.com.br/clear_opcache.php
+
+---
+
 ## 📋 Pré-requisitos
 
 - cPanel com acesso SSH
