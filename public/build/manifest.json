@@ -1,0 +1,41 @@
+{
+  "_bootstrap-CvgioS1y.js": {
+    "file": "assets/bootstrap-CvgioS1y.js",
+    "name": "bootstrap"
+  },
+  "resources/css/app.css": {
+    "file": "assets/app-ggkyskcs.css",
+    "src": "resources/css/app.css",
+    "isEntry": true,
+    "names": [
+      "app.css"
+    ]
+  },
+  "resources/js/agenda.js": {
+    "file": "assets/agenda-5s2upq9e.js",
+    "name": "agenda",
+    "src": "resources/js/agenda.js",
+    "isEntry": true,
+    "css": [
+      "assets/agenda-DQKaNtan.css"
+    ]
+  },
+  "resources/js/app.js": {
+    "file": "assets/app-fwQLtO3W.js",
+    "name": "app",
+    "src": "resources/js/app.js",
+    "isEntry": true,
+    "imports": [
+      "_bootstrap-CvgioS1y.js"
+    ]
+  },
+  "resources/js/site.js": {
+    "file": "assets/site-CkPahvE9.js",
+    "name": "site",
+    "src": "resources/js/site.js",
+    "isEntry": true,
+    "imports": [
+      "_bootstrap-CvgioS1y.js"
+    ]
+  }
+}
