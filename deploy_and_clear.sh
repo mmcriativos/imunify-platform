@@ -28,9 +28,12 @@ php artisan view:clear
 echo "6. Otimizando autoloader..."
 composer dump-autoload --optimize
 
-# 7. Cache config para produção
+# 7. Cache config para produção (mas NÃO cache de rotas - multi-tenancy dinâmico)
 echo "7. Cacheando configurações..."
 php artisan config:cache
+
+# IMPORTANTE: NÃO fazer route:cache em multi-tenancy dinâmico
+# As rotas dos tenants são carregadas dinamicamente pelo TenancyServiceProvider
 
 echo ""
 echo "=== Deploy Concluído! ==="
