@@ -32,10 +32,19 @@ class RegisterTenantController extends Controller
      */
     public function register(Request $request)
     {
+        // Debug temporário
+        Log::info('Tentativa de registro', [
+            'dados' => $request->all()
+        ]);
+
         // Validar dados
         $validator = $this->validator($request->all());
         
         if ($validator->fails()) {
+            Log::error('Validação falhou', [
+                'erros' => $validator->errors()->toArray()
+            ]);
+            
             return back()
                 ->withErrors($validator)
                 ->withInput();
