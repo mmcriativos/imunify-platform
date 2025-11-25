@@ -49,14 +49,16 @@ class ResetTenantDatabase extends Command
         $this->info("Limpando database {$databaseName}...");
         
         try {
-            // Conectar ao database do tenant
+            // Conectar ao database do tenant usando as mesmas credenciais da conexão landlord
+            $landlordConfig = config('database.connections.landlord');
+            
             config(['database.connections.tenant_clean' => [
                 'driver' => 'mysql',
-                'host' => env('DB_HOST', '127.0.0.1'),
-                'port' => env('DB_PORT', '3306'),
+                'host' => $landlordConfig['host'],
+                'port' => $landlordConfig['port'],
                 'database' => $databaseName,
-                'username' => env('DB_USERNAME', 'forge'),
-                'password' => env('DB_PASSWORD', ''),
+                'username' => $landlordConfig['username'],
+                'password' => $landlordConfig['password'],
                 'charset' => 'utf8mb4',
                 'collation' => 'utf8mb4_unicode_ci',
                 'prefix' => '',
