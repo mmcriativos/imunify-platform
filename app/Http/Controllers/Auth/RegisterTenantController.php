@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Tenant;
 use App\Models\Plan;
 use App\Models\User;
+use App\Models\DatabasePool;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -37,6 +38,13 @@ class RegisterTenantController extends Controller
         if ($validator->fails()) {
             return back()
                 ->withErrors($validator)
+                ->withInput();
+        }
+
+        // Verificar se há databases disponíveis no pool
+        if (DatabasePool::getAvailableCount() === 0) {
+            return back()
+                ->with('error', 'No momento estamos com capacidade máxima. Por favor, tente novamente em alguns minutos ou entre em contato conosco.')
                 ->withInput();
         }
 
@@ -150,8 +158,21 @@ class RegisterTenantController extends Controller
      */
     protected function createTenant(Request $request)
     {
+        $tenantId = Str::slug($request->subdomain);
+        
+        // Alocar database do pool
+        $databaseName = DatabasePool::allocateDatabase($tenantId);
+        
+        if (!$databaseName) {
+            throw new \Exception('Nenhum database disponível no pool. Por favor, tente novamente mais tarde.');
+        }
+        
+        Log::info("Database '{$databaseName}' alocado para tenant '{$tenantId}'");
+        
+        // Criar tenant com database específico
         $tenant = Tenant::create([
-            'id' => Str::slug($request->subdomain),
+            'id' => $tenantId,
+            'tenancy_db_name' => $databaseName,
         ]);
 
         // Configurar dados
@@ -172,6 +193,14 @@ class RegisterTenantController extends Controller
         $tenant->subscription_ends_at = now()->addDays(7);
         
         $tenant->save();
+        
+        // Notificar admin se pool está ficando baixo
+        if (DatabasePool::isPoolLow()) {
+            Log::warning('Pool de databases está baixo!', [
+                'available' => DatabasePool::getAvailableCount(),
+            ]);
+            // TODO: Enviar email para admin
+        }
 
         return $tenant;
     }
