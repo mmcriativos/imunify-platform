@@ -239,9 +239,9 @@ class RegisterTenantController extends Controller
     {
         // Cidades padrão
         DB::table('cidades')->insert([
-            ['nome' => 'São Paulo', 'estado' => 'SP', 'created_at' => now(), 'updated_at' => now()],
-            ['nome' => 'Rio de Janeiro', 'estado' => 'RJ', 'created_at' => now(), 'updated_at' => now()],
-            ['nome' => 'Campinas', 'estado' => 'SP', 'created_at' => now(), 'updated_at' => now()],
+            ['nome' => 'São Paulo', 'uf' => 'SP', 'ativo' => true, 'created_at' => now(), 'updated_at' => now()],
+            ['nome' => 'Rio de Janeiro', 'uf' => 'RJ', 'ativo' => true, 'created_at' => now(), 'updated_at' => now()],
+            ['nome' => 'Campinas', 'uf' => 'SP', 'ativo' => true, 'created_at' => now(), 'updated_at' => now()],
         ]);
 
         // Vacinas padrão
