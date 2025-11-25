@@ -352,6 +352,7 @@
                                 <input type="email" name="email" value="{{ old('email') }}" 
                                        class="w-full pl-12 pr-4 py-3 border-2 border-gray-300 rounded-xl focus:border-primary-500 focus:ring-4 focus:ring-primary-100 transition-all duration-200 @error('email') border-red-500 @enderror" 
                                        placeholder="contato@clinica.com"
+                                       autocomplete="email"
                                        required>
                             </div>
                             @error('email')
@@ -373,6 +374,7 @@
                                 <input type="text" id="phone" name="phone" value="{{ old('phone') }}" 
                                        class="w-full pl-12 pr-4 py-3 border-2 border-gray-300 rounded-xl focus:border-primary-500 focus:ring-4 focus:ring-primary-100 transition-all duration-200 @error('phone') border-red-500 @enderror" 
                                        placeholder="(11) 99999-9999"
+                                       autocomplete="tel"
                                        required>
                             </div>
                             @error('phone')
@@ -461,6 +463,7 @@
                                 <input type="email" name="admin_email" value="{{ old('admin_email') }}" 
                                        class="w-full pl-12 pr-4 py-3 border-2 border-gray-300 rounded-xl focus:border-primary-500 focus:ring-4 focus:ring-primary-100 transition-all duration-200 @error('admin_email') border-red-500 @enderror" 
                                        placeholder="joao@email.com"
+                                       autocomplete="username"
                                        required>
                             </div>
                             @error('admin_email')
@@ -482,6 +485,7 @@
                                 <input type="password" name="password" 
                                        class="w-full pl-12 pr-4 py-3 border-2 border-gray-300 rounded-xl focus:border-primary-500 focus:ring-4 focus:ring-primary-100 transition-all duration-200 @error('password') border-red-500 @enderror" 
                                        placeholder="Mínimo 8 caracteres"
+                                       autocomplete="new-password"
                                        required>
                             </div>
                             @error('password')
@@ -503,6 +507,7 @@
                                 <input type="password" name="password_confirmation" 
                                        class="w-full pl-12 pr-4 py-3 border-2 border-gray-300 rounded-xl focus:border-primary-500 focus:ring-4 focus:ring-primary-100 transition-all duration-200" 
                                        placeholder="Digite a senha novamente"
+                                       autocomplete="new-password"
                                        required>
                             </div>
                         </div>
