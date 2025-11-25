@@ -6,6 +6,7 @@
     <title>Cadastre sua Clínica - Imunify</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://unpkg.com/imask"></script>
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <script>
         tailwind.config = {
@@ -369,7 +370,7 @@
                                 <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                                     <i class="fas fa-phone text-gray-400"></i>
                                 </div>
-                                <input type="text" name="phone" value="{{ old('phone') }}" 
+                                <input type="text" id="phone" name="phone" value="{{ old('phone') }}" 
                                        class="w-full pl-12 pr-4 py-3 border-2 border-gray-300 rounded-xl focus:border-primary-500 focus:ring-4 focus:ring-primary-100 transition-all duration-200 @error('phone') border-red-500 @enderror" 
                                        placeholder="(11) 99999-9999"
                                        required>
@@ -384,15 +385,16 @@
 
                         <div>
                             <label class="block text-sm font-semibold text-gray-700 mb-2">
-                                CNPJ <span class="text-gray-400">(opcional)</span>
+                                CNPJ <span class="text-red-500">*</span>
                             </label>
                             <div class="relative">
                                 <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                                     <i class="fas fa-file-alt text-gray-400"></i>
                                 </div>
-                                <input type="text" name="cnpj" value="{{ old('cnpj') }}" 
+                                <input type="text" id="cnpj" name="cnpj" value="{{ old('cnpj') }}" 
                                        class="w-full pl-12 pr-4 py-3 border-2 border-gray-300 rounded-xl focus:border-primary-500 focus:ring-4 focus:ring-primary-100 transition-all duration-200 @error('cnpj') border-red-500 @enderror" 
-                                       placeholder="00.000.000/0000-00">
+                                       placeholder="00.000.000/0000-00"
+                                       required>
                             </div>
                             @error('cnpj')
                                 <p class="text-red-500 text-sm mt-1 flex items-center gap-1">
@@ -579,6 +581,15 @@
 
     {{-- Script para verificar subdomínio em tempo real --}}
     <script>
+        // Máscaras de input
+        const phoneMask = IMask(document.getElementById('phone'), {
+            mask: '(00) 00000-0000'
+        });
+
+        const cnpjMask = IMask(document.getElementById('cnpj'), {
+            mask: '00.000.000/0000-00'
+        });
+
         const subdomainInput = document.getElementById('subdomain');
         const statusDiv = document.getElementById('subdomain-status');
         const registerForm = document.querySelector('form');

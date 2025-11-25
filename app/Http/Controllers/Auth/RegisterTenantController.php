@@ -128,7 +128,7 @@ class RegisterTenantController extends Controller
             // Dados de contato
             'email' => ['required', 'string', 'email', 'max:255'],
             'phone' => ['required', 'string', 'max:20'],
-            'cnpj' => ['nullable', 'string', 'size:14'],
+            'cnpj' => ['required', 'string', 'size:18'], // Com máscara: 00.000.000/0000-00
             
             // Endereço (opcional)
             'cep' => ['nullable', 'string', 'size:8'],
