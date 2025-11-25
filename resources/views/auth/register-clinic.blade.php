@@ -271,12 +271,12 @@
                                     <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
                                         <i class="fas fa-hospital text-gray-400 text-sm"></i>
                                     </div>
-                                    <input type="text" name="name" value="{{ old('name') }}" 
-                                           class="w-full pl-11 pr-4 py-3 border border-gray-300 rounded-xl focus:border-primary-500 focus:ring-2 focus:ring-primary-100 transition @error('name') border-red-500 @enderror" 
+                                    <input type="text" name="clinic_name" value="{{ old('clinic_name') }}" 
+                                           class="w-full pl-11 pr-4 py-3 border border-gray-300 rounded-xl focus:border-primary-500 focus:ring-2 focus:ring-primary-100 transition @error('clinic_name') border-red-500 @enderror" 
                                            placeholder="Ex: Clínica Saúde & Vida"
                                            required>
                                 </div>
-                                @error('name')
+                                @error('clinic_name')
                                     <p class="text-red-500 text-sm mt-1.5 flex items-center gap-1">
                                         <i class="fas fa-exclamation-circle text-xs"></i> {{ $message }}
                                     </p>
@@ -469,9 +469,9 @@
                     <div class="mb-6">
                         <label class="flex items-start gap-3 cursor-pointer group">
                             <div class="flex items-center h-6">
-                                <input type="checkbox" name="terms" value="1" 
-                                       class="w-5 h-5 text-primary-600 border-gray-300 rounded focus:ring-primary-500 focus:ring-2 @error('terms') border-red-500 @enderror"
-                                       {{ old('terms') ? 'checked' : '' }}
+                                <input type="checkbox" name="accept_terms" value="1" 
+                                       class="w-5 h-5 text-primary-600 border-gray-300 rounded focus:ring-primary-500 focus:ring-2 @error('accept_terms') border-red-500 @enderror"
+                                       {{ old('accept_terms') ? 'checked' : '' }}
                                        required>
                             </div>
                             <div class="text-sm">
@@ -484,7 +484,7 @@
                                 </span>
                             </div>
                         </label>
-                        @error('terms')
+                        @error('accept_terms')
                             <p class="text-red-500 text-sm mt-2 flex items-center gap-1 ml-8">
                                 <i class="fas fa-exclamation-circle text-xs"></i> {{ $message }}
                             </p>
