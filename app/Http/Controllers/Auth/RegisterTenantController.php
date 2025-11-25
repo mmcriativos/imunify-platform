@@ -85,8 +85,8 @@ class RegisterTenantController extends Controller
             // Criar token temporário para login automático no subdomínio
             $loginToken = Str::random(60);
             
-            // Usar cache sem tags (file driver não suporta tags)
-            \Illuminate\Support\Facades\Cache::put('login_token_' . $loginToken, [
+            // Usar cache store direto (bypassa CacheManager do Tenancy)
+            app('cache')->store()->put('login_token_' . $loginToken, [
                 'tenant_id' => $tenant->id,
                 'user_email' => $user->email,
             ], now()->addMinutes(5));

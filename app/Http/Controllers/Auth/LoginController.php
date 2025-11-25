@@ -99,8 +99,8 @@ class LoginController extends Controller
             return redirect()->route('login')->with('error', 'Token inválido.');
         }
 
-        // Buscar dados do cache
-        $loginData = \Illuminate\Support\Facades\Cache::pull('login_token_' . $token);
+        // Buscar dados do cache (usar store direto para evitar CacheManager do Tenancy)
+        $loginData = app('cache')->store()->pull('login_token_' . $token);
         
         if (!$loginData) {
             Log::warning('Token de auto-login não encontrado ou expirado', ['token' => $token]);
