@@ -1,0 +1,36 @@
+# Imagens do Imunify
+
+## Logos
+- `imunify-logo.png` - Logo completo horizontal (180-250px largura)
+- `imunify-icon.png` - Ícone apenas o símbolo (512x512px)
+
+## Paleta de Cores
+
+### Cores Principais
+- **Cyan:** `#3ebddb` (primary-500)
+- **Green:** `#77ca73` (secondary-500)
+
+### Gradiente da Marca
+```css
+background: linear-gradient(to right, #3ebddb, #77ca73);
+```
+
+### Classes Tailwind
+```html
+<!-- Gradiente -->
+<div class="bg-gradient-to-r from-primary-500 to-secondary-500"></div>
+
+<!-- Texto com gradiente -->
+<span class="bg-gradient-to-r from-primary-500 to-secondary-500 bg-clip-text text-transparent"></span>
+
+<!-- Cores sólidas -->
+<div class="bg-primary-500"></div>
+<div class="text-secondary-600"></div>
+```
+
+## Onde os logos devem estar:
+1. Landing page (header)
+2. Página de registro (header)
+3. Dashboard (sidebar)
+4. Favicon (browser tab)
+5. Meta tags (compartilhamento social)
