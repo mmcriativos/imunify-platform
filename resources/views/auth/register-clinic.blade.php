@@ -536,12 +536,12 @@
 
                 {{-- Botão de Envio --}}
                 <button type="submit" 
-                        class="w-full bg-gradient-to-r from-primary-500 to-secondary-500 text-white py-4 px-8 rounded-xl font-bold text-lg hover:from-indigo-600 hover:to-purple-700 transition-all duration-300 shadow-xl hover:shadow-2xl transform hover:scale-[1.02] active:scale-95 relative overflow-hidden group">
+                        class="w-full bg-gradient-to-r from-primary-500 to-secondary-500 text-white py-4 px-8 rounded-xl font-bold text-lg hover:from-primary-600 hover:to-secondary-600 transition-all duration-300 shadow-xl hover:shadow-2xl transform hover:scale-[1.02] active:scale-95 relative overflow-hidden group">
                     <span class="absolute inset-0 w-full h-full bg-gradient-to-r from-white to-transparent opacity-0 group-hover:opacity-20 transition-opacity duration-300"></span>
                     <span class="relative flex items-center justify-center gap-3">
-                        <i class="fas fa-rocket text-xl"></i>
-                        <span>Criar Minha Clínica - 7 Dias Grátis</span>
-                        <i class="fas fa-arrow-right text-lg"></i>
+                        <i class="fas fa-gift text-xl animate-bounce"></i>
+                        <span>Começar Teste Grátis de 7 Dias</span>
+                        <i class="fas fa-arrow-right text-lg group-hover:translate-x-1 transition-transform"></i>
                     </span>
                 </button>
 
