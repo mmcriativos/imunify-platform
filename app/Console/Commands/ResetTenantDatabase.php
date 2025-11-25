@@ -87,17 +87,20 @@ class ResetTenantDatabase extends Command
             // Reabilitar foreign key checks
             DB::connection('tenant_clean')->statement('SET FOREIGN_KEY_CHECKS=1');
             
-            $this->info("Database limpo com sucesso!");
+            $this->info("✓ Database limpo com sucesso!");
             
         } catch (\Exception $e) {
-            $this->error("Erro ao limpar database: " . $e->getMessage());
+            $this->error("❌ ERRO ao limpar database: " . $e->getMessage());
+            $this->error("⚠️  O database NÃO foi liberado no pool!");
             Log::error('Erro ao resetar tenant database', [
                 'database' => $databaseName,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
             ]);
+            return 1; // Abortar sem liberar o pool
         }
 
-        // 3. Liberar database no pool
+        // 3. Liberar database no pool (só chega aqui se não houve erro)
         $this->info("Liberando database no pool...");
         $poolEntry->in_use = false;
         $poolEntry->tenant_id = null;
