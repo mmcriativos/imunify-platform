@@ -463,19 +463,42 @@
                         </div>
                     </div>
 
+                    <div class="border-t border-gray-200 my-8"></div>
+
+                    {{-- Termos e Condições --}}
+                    <div class="mb-6">
+                        <label class="flex items-start gap-3 cursor-pointer group">
+                            <div class="flex items-center h-6">
+                                <input type="checkbox" name="terms" value="1" 
+                                       class="w-5 h-5 text-primary-600 border-gray-300 rounded focus:ring-primary-500 focus:ring-2 @error('terms') border-red-500 @enderror"
+                                       {{ old('terms') ? 'checked' : '' }}
+                                       required>
+                            </div>
+                            <div class="text-sm">
+                                <span class="text-gray-700">
+                                    Li e aceito os 
+                                    <a href="#" class="text-primary-600 hover:text-primary-700 font-semibold hover:underline">Termos de Uso</a> 
+                                    e a 
+                                    <a href="#" class="text-primary-600 hover:text-primary-700 font-semibold hover:underline">Política de Privacidade</a>
+                                    <span class="text-red-500">*</span>
+                                </span>
+                            </div>
+                        </label>
+                        @error('terms')
+                            <p class="text-red-500 text-sm mt-2 flex items-center gap-1 ml-8">
+                                <i class="fas fa-exclamation-circle text-xs"></i> {{ $message }}
+                            </p>
+                        @enderror
+                    </div>
+
                     {{-- Botão Submit --}}
-                    <div class="pt-6">
+                    <div class="pt-2">
                         <button type="submit" 
                                 class="w-full bg-gradient-to-r from-primary-500 to-secondary-500 hover:from-primary-600 hover:to-secondary-600 text-white font-bold py-4 px-6 rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200 flex items-center justify-center gap-3 text-lg pulse-glow">
                             <i class="fas fa-gift"></i>
                             <span>Começar Teste Grátis de 7 Dias</span>
                             <i class="fas fa-arrow-right"></i>
                         </button>
-                        <p class="text-center text-xs text-gray-500 mt-4">
-                            Ao clicar, você concorda com nossos 
-                            <a href="#" class="text-primary-600 hover:underline">Termos de Uso</a> e 
-                            <a href="#" class="text-primary-600 hover:underline">Política de Privacidade</a>
-                        </p>
                     </div>
                 </form>
             </div>
