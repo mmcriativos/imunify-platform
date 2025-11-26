@@ -32,7 +32,7 @@ echo "   - Email: {$data['email']}\n\n";
 try {
     echo "2. Verificando DatabasePool...\n";
     $pool = DB::table('database_pool')
-        ->where('is_available', true)
+        ->where('in_use', false)
         ->lockForUpdate()
         ->first();
     
@@ -73,7 +73,7 @@ try {
         DB::table('database_pool')
             ->where('id', $pool->id)
             ->update([
-                'is_available' => false,
+                'in_use' => true,
                 'tenant_id' => $data['subdomain'],
                 'allocated_at' => now(),
             ]);

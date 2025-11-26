@@ -16,21 +16,26 @@ echo "========================================\n\n";
 
 // Tenants
 echo "TENANTS:\n";
-$tenants = \DB::table('tenants')->get();
+$tenants = \Illuminate\Support\Facades\DB::table('tenants')->get();
 if ($tenants->isEmpty()) {
     echo "   ❌ Nenhum tenant cadastrado\n\n";
 } else {
     foreach ($tenants as $tenant) {
+        $data = $tenant->data ? json_decode($tenant->data, true) : [];
+        $dbName = $data['tenancy_db_name'] ?? '[indefinido]';
+        $clinicName = $data['clinic_name'] ?? '[sem nome]';
+        $status = $data['status'] ?? ($tenant->status ?? '[sem status]');
+
         echo "   - ID: {$tenant->id}\n";
-        echo "     Database: {$tenant->tenancy_db_name}\n";
-        echo "     Nome: {$tenant->clinic_name}\n";
-        echo "     Status: {$tenant->status}\n\n";
+        echo "     Database: {$dbName}\n";
+        echo "     Nome: {$clinicName}\n";
+        echo "     Status: {$status}\n\n";
     }
 }
 
 // Domínios
 echo "DOMÍNIOS:\n";
-$domains = \DB::table('domains')->get();
+$domains = \Illuminate\Support\Facades\DB::table('domains')->get();
 if ($domains->isEmpty()) {
     echo "   ❌ Nenhum domínio cadastrado\n\n";
 } else {
