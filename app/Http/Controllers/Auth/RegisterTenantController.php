@@ -117,16 +117,18 @@ class RegisterTenantController extends Controller
 
             // Inicializar contexto do tenant
             Log::info('➤ Passo 4: Inicializando tenancy...');
-            file_put_contents(storage_path('logs/laravel.log'), "[" . date('Y-m-d H:i:s') . "] 🔧 Chamando tenancy()->initialize()...\n", FILE_APPEND);
+            file_put_contents(base_path('storage/logs/laravel.log'), "[" . date('Y-m-d H:i:s') . "] 🔧 Chamando tenancy()->initialize()...\n", FILE_APPEND);
             tenancy()->initialize($tenant);
-            file_put_contents(storage_path('logs/laravel.log'), "[" . date('Y-m-d H:i:s') . "] ✅ PASSO 4 COMPLETO - Tenancy inicializado\n", FILE_APPEND);
+            // APÓS tenancy()->initialize(), o storage_path() muda para o tenant!
+            // Então usamos base_path() para escrever no storage central
+            file_put_contents(base_path('storage/logs/laravel.log'), "[" . date('Y-m-d H:i:s') . "] ✅ PASSO 4 COMPLETO - Tenancy inicializado\n", FILE_APPEND);
             Log::info('✓ Passo 4: Tenancy inicializado');
 
             // Criar usuário admin
             Log::info('➤ Passo 5: Criando usuário admin...');
-            file_put_contents(storage_path('logs/laravel.log'), "[" . date('Y-m-d H:i:s') . "] 👤 Chamando createAdminUser()...\n", FILE_APPEND);
+            file_put_contents(base_path('storage/logs/laravel.log'), "[" . date('Y-m-d H:i:s') . "] 👤 Chamando createAdminUser()...\n", FILE_APPEND);
             $user = $this->createAdminUser($request);
-            file_put_contents(storage_path('logs/laravel.log'), "[" . date('Y-m-d H:i:s') . "] ✅ PASSO 5 COMPLETO - User ID: {$user->id}\n", FILE_APPEND);
+            file_put_contents(base_path('storage/logs/laravel.log'), "[" . date('Y-m-d H:i:s') . "] ✅ PASSO 5 COMPLETO - User ID: {$user->id}\n", FILE_APPEND);
             Log::info('✓ Passo 5: Usuário criado', ['user_id' => $user->id]);
 
             // Popular dados iniciais
