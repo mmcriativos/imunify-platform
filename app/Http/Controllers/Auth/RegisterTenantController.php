@@ -247,10 +247,15 @@ class RegisterTenantController extends Controller
      */
     protected function createTenant(Request $request)
     {
+        file_put_contents(storage_path('logs/laravel.log'), "[" . date('Y-m-d H:i:s') . "] 🏗️ createTenant() - INÍCIO\n", FILE_APPEND);
+        
         $tenantId = Str::slug($request->subdomain);
+        file_put_contents(storage_path('logs/laravel.log'), "[" . date('Y-m-d H:i:s') . "] 🏗️ Tenant ID gerado: {$tenantId}\n", FILE_APPEND);
         
         // Alocar database do pool
+        file_put_contents(storage_path('logs/laravel.log'), "[" . date('Y-m-d H:i:s') . "] 🏗️ Chamando DatabasePool::allocateDatabase()\n", FILE_APPEND);
         $databaseName = DatabasePool::allocateDatabase($tenantId);
+        file_put_contents(storage_path('logs/laravel.log'), "[" . date('Y-m-d H:i:s') . "] 🏗️ Database alocado: {$databaseName}\n", FILE_APPEND);
         
         if (!$databaseName) {
             throw new \Exception('Nenhum database disponível no pool. Por favor, tente novamente mais tarde.');
@@ -259,10 +264,12 @@ class RegisterTenantController extends Controller
         Log::info("Database '{$databaseName}' alocado para tenant '{$tenantId}'");
         
         // Criar tenant com database específico
+        file_put_contents(storage_path('logs/laravel.log'), "[" . date('Y-m-d H:i:s') . "] 🏗️ Criando tenant via Tenant::create()\n", FILE_APPEND);
         $tenant = Tenant::create([
             'id' => $tenantId,
             'tenancy_db_name' => $databaseName,
         ]);
+        file_put_contents(storage_path('logs/laravel.log'), "[" . date('Y-m-d H:i:s') . "] 🏗️ Tenant criado com ID: {$tenant->id}\n", FILE_APPEND);
 
         // Configurar dados
         $tenant->plan_id = $request->plan_id;
