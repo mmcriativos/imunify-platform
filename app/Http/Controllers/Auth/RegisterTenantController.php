@@ -32,16 +32,18 @@ class RegisterTenantController extends Controller
      */
     public function register(Request $request)
     {
-        // Debug temporário
-        Log::info('Tentativa de registro', [
-            'dados' => $request->all()
+        Log::info('🚀 RegisterTenantController@register CHAMADO', [
+            'timestamp' => now()->toDateTimeString(),
+            'subdomain' => $request->subdomain,
+            'email' => $request->admin_email,
         ]);
 
         // Validar dados
+        Log::info('➤ Passo 0: Iniciando validação...');
         $validator = $this->validator($request->all());
         
         if ($validator->fails()) {
-            Log::error('Validação falhou', [
+            Log::error('❌ Validação falhou', [
                 'erros' => $validator->errors()->toArray()
             ]);
             
@@ -49,46 +51,54 @@ class RegisterTenantController extends Controller
                 ->withErrors($validator)
                 ->withInput();
         }
+        Log::info('✓ Passo 0: Validação OK');
 
         // Verificar se há databases disponíveis no pool
-        if (DatabasePool::getAvailableCount() === 0) {
+        Log::info('➤ Passo 0.5: Verificando pool...');
+        $availableCount = DatabasePool::getAvailableCount();
+        Log::info('Pool disponível: ' . $availableCount);
+        
+        if ($availableCount === 0) {
+            Log::warning('Pool vazio!');
             return back()
                 ->with('error', 'No momento estamos com capacidade máxima. Por favor, tente novamente em alguns minutos ou entre em contato conosco.')
                 ->withInput();
         }
 
         try {
+            Log::info('➤ Passo 1: Iniciando transação...');
             DB::beginTransaction();
+            Log::info('✓ Transação iniciada');
             Log::info('=== INÍCIO DO REGISTRO DE TENANT ===');
 
             // Criar Tenant
-            Log::info('1. Criando tenant...');
+            Log::info('➤ Passo 2: Criando tenant...');
             $tenant = $this->createTenant($request);
-            Log::info('✓ Tenant criado', ['tenant_id' => $tenant->id]);
+            Log::info('✓ Passo 2: Tenant criado', ['tenant_id' => $tenant->id]);
 
             // Criar Domínio
-            Log::info('2. Criando domínio...');
+            Log::info('➤ Passo 3: Criando domínio...');
             $this->createDomain($tenant, $request->subdomain);
-            Log::info('✓ Domínio criado');
+            Log::info('✓ Passo 3: Domínio criado');
 
             // Inicializar contexto do tenant
-            Log::info('3. Inicializando tenancy...');
+            Log::info('➤ Passo 4: Inicializando tenancy...');
             tenancy()->initialize($tenant);
-            Log::info('✓ Tenancy inicializado');
+            Log::info('✓ Passo 4: Tenancy inicializado');
 
             // Criar usuário admin
-            Log::info('4. Criando usuário admin...');
+            Log::info('➤ Passo 5: Criando usuário admin...');
             $user = $this->createAdminUser($request);
-            Log::info('✓ Usuário criado', ['user_id' => $user->id]);
+            Log::info('✓ Passo 5: Usuário criado', ['user_id' => $user->id]);
 
             // Popular dados iniciais
-            Log::info('5. Populando dados iniciais...');
+            Log::info('➤ Passo 6: Populando dados iniciais...');
             $this->seedInitialData($tenant);
-            Log::info('✓ Dados populados');
+            Log::info('✓ Passo 6: Dados populados');
 
-            Log::info('6. Fazendo commit da transação...');
+            Log::info('➤ Passo 7: FAZENDO COMMIT DA TRANSAÇÃO...');
             DB::commit();
-            Log::info('✓✓✓ COMMIT REALIZADO - TENANT SALVO COM SUCESSO! ✓✓✓');
+            Log::info('✓✓✓ PASSO 7: COMMIT REALIZADO - TENANT SALVO COM SUCESSO! ✓✓✓');
 
             Log::info('Tenant criado com sucesso', [
                 'tenant_id' => $tenant->id,
@@ -98,20 +108,21 @@ class RegisterTenantController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
             
-            Log::error('❌ ERRO ao criar tenant: ' . $e->getMessage(), [
+            Log::error('❌❌❌ ERRO FATAL ao criar tenant: ' . $e->getMessage(), [
+                'exception_class' => get_class($e),
                 'file' => $e->getFile(),
                 'line' => $e->getLine(),
                 'trace' => $e->getTraceAsString()
             ]);
             
             return back()
-                ->with('error', 'Erro ao criar sua clínica. Por favor, tente novamente ou entre em contato.')
+                ->with('error', 'Erro ao criar sua clínica: ' . $e->getMessage())
                 ->withInput();
         }
 
         // FORA DO TRY-CATCH: Criar token e redirecionar (mesmo se falhar, tenant já foi salvo)
         try {
-            Log::info('7. Criando token de auto-login...');
+            Log::info('➤ Passo 8: Criando token de auto-login...');
             $loginToken = Str::random(60);
             
             // Usar cache store direto (bypassa CacheManager do Tenancy)
@@ -119,14 +130,14 @@ class RegisterTenantController extends Controller
                 'tenant_id' => $tenant->id,
                 'user_email' => $user->email,
             ], now()->addMinutes(5));
-            Log::info('✓ Token criado');
+            Log::info('✓ Passo 8: Token criado', ['token' => substr($loginToken, 0, 10) . '...']);
 
             // Redirecionar para dashboard da clínica com token
             $domain = $tenant->domains->first()->domain;
             $protocol = env('APP_ENV') === 'local' ? 'http://' : 'https://';
             $redirectUrl = $protocol . $domain . '/auto-login?token=' . $loginToken;
             
-            Log::info('8. Redirecionando para', ['url' => $redirectUrl]);
+            Log::info('➤ Passo 9: Redirecionando para', ['url' => $redirectUrl]);
             
             return redirect()->away($redirectUrl);
             
