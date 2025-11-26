@@ -1,3 +1,8 @@
+# Força PHP mbstring extension
+<IfModule litespeed>
+    php_value extension mbstring.so
+</IfModule>
+
 <IfModule mod_rewrite.c>
     <IfModule mod_negotiation.c>
         Options -MultiViews -Indexes
