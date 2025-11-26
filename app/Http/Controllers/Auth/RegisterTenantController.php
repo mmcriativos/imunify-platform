@@ -88,14 +88,29 @@ class RegisterTenantController extends Controller
 
             Log::info('6. Fazendo commit da transação...');
             DB::commit();
-            Log::info('✓ Commit realizado');
+            Log::info('✓✓✓ COMMIT REALIZADO - TENANT SALVO COM SUCESSO! ✓✓✓');
 
             Log::info('Tenant criado com sucesso', [
                 'tenant_id' => $tenant->id,
                 'domain' => $tenant->domains->first()->domain
             ]);
 
-            // Criar token temporário para login automático no subdomínio
+        } catch (\Exception $e) {
+            DB::rollBack();
+            
+            Log::error('❌ ERRO ao criar tenant: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return back()
+                ->with('error', 'Erro ao criar sua clínica. Por favor, tente novamente ou entre em contato.')
+                ->withInput();
+        }
+
+        // FORA DO TRY-CATCH: Criar token e redirecionar (mesmo se falhar, tenant já foi salvo)
+        try {
             Log::info('7. Criando token de auto-login...');
             $loginToken = Str::random(60);
             
@@ -114,19 +129,15 @@ class RegisterTenantController extends Controller
             Log::info('8. Redirecionando para', ['url' => $redirectUrl]);
             
             return redirect()->away($redirectUrl);
-
-        } catch (\Exception $e) {
-            DB::rollBack();
             
-            Log::error('❌ ERRO ao criar tenant: ' . $e->getMessage(), [
-                'file' => $e->getFile(),
-                'line' => $e->getLine(),
-                'trace' => $e->getTraceAsString()
+        } catch (\Exception $e) {
+            // Se falhar o redirect, pelo menos mostra mensagem de sucesso
+            Log::warning('Erro ao criar token/redirect, mas tenant foi criado', [
+                'error' => $e->getMessage()
             ]);
             
-            return back()
-                ->with('error', 'Erro ao criar sua clínica. Por favor, tente novamente ou entre em contato.')
-                ->withInput();
+            return redirect()->route('register.form')
+                ->with('success', 'Clínica criada com sucesso! Acesse: https://' . $tenant->domains->first()->domain);
         }
     }
 
