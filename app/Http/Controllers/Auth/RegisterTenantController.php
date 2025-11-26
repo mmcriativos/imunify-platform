@@ -97,7 +97,8 @@ class RegisterTenantController extends Controller
         try {
             file_put_contents(storage_path('logs/laravel.log'), "[" . date('Y-m-d H:i:s') . "] ➤➤➤ DENTRO DO TRY - ANTES DO DB::beginTransaction()\n", FILE_APPEND);
             Log::info('➤ Passo 1: Iniciando transação...');
-            DB::beginTransaction();
+            DB::connection('central')->beginTransaction();
+            file_put_contents(storage_path('logs/laravel.log'), "[" . date('Y-m-d H:i:s') . "] ✓✓✓ DB::beginTransaction() EXECUTADO COM SUCESSO!\n", FILE_APPEND);
             Log::info('✓ Transação iniciada');
             Log::info('=== INÍCIO DO REGISTRO DE TENANT ===');
 
@@ -127,7 +128,7 @@ class RegisterTenantController extends Controller
             Log::info('✓ Passo 6: Dados populados');
 
             Log::info('➤ Passo 7: FAZENDO COMMIT DA TRANSAÇÃO...');
-            DB::commit();
+            DB::connection('central')->commit();
             Log::info('✓✓✓ PASSO 7: COMMIT REALIZADO - TENANT SALVO COM SUCESSO! ✓✓✓');
 
             Log::info('Tenant criado com sucesso', [
@@ -136,7 +137,7 @@ class RegisterTenantController extends Controller
             ]);
 
         } catch (\Exception $e) {
-            DB::rollBack();
+            DB::connection('central')->rollBack();
             
             Log::error('❌❌❌ ERRO FATAL ao criar tenant: ' . $e->getMessage(), [
                 'exception_class' => get_class($e),
