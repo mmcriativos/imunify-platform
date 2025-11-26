@@ -83,6 +83,7 @@ class RegisterTenantController extends Controller
             FILE_APPEND
         );
         Log::info('Pool disponível: ' . $availableCount);
+        file_put_contents(storage_path('logs/laravel.log'), "[" . date('Y-m-d H:i:s') . "] ➤➤➤ ANTES DO TRY-CATCH\n", FILE_APPEND);
         
         if ($availableCount === 0) {
             Log::warning('Pool vazio!');
@@ -91,7 +92,10 @@ class RegisterTenantController extends Controller
                 ->withInput();
         }
 
+        file_put_contents(storage_path('logs/laravel.log'), "[" . date('Y-m-d H:i:s') . "] ➤➤➤ ENTRANDO NO TRY-CATCH\n", FILE_APPEND);
+        
         try {
+            file_put_contents(storage_path('logs/laravel.log'), "[" . date('Y-m-d H:i:s') . "] ➤➤➤ DENTRO DO TRY - ANTES DO DB::beginTransaction()\n", FILE_APPEND);
             Log::info('➤ Passo 1: Iniciando transação...');
             DB::beginTransaction();
             Log::info('✓ Transação iniciada');
