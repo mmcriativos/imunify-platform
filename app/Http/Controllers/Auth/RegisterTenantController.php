@@ -105,21 +105,28 @@ class RegisterTenantController extends Controller
             // Criar Tenant
             Log::info('➤ Passo 2: Criando tenant...');
             $tenant = $this->createTenant($request);
+            file_put_contents(storage_path('logs/laravel.log'), "[" . date('Y-m-d H:i:s') . "] ✅ PASSO 2 COMPLETO - Tenant ID: {$tenant->id}\n", FILE_APPEND);
             Log::info('✓ Passo 2: Tenant criado', ['tenant_id' => $tenant->id]);
 
             // Criar Domínio
             Log::info('➤ Passo 3: Criando domínio...');
+            file_put_contents(storage_path('logs/laravel.log'), "[" . date('Y-m-d H:i:s') . "] 🌐 Chamando createDomain()...\n", FILE_APPEND);
             $this->createDomain($tenant, $request->subdomain);
+            file_put_contents(storage_path('logs/laravel.log'), "[" . date('Y-m-d H:i:s') . "] ✅ PASSO 3 COMPLETO - Domínio criado\n", FILE_APPEND);
             Log::info('✓ Passo 3: Domínio criado');
 
             // Inicializar contexto do tenant
             Log::info('➤ Passo 4: Inicializando tenancy...');
+            file_put_contents(storage_path('logs/laravel.log'), "[" . date('Y-m-d H:i:s') . "] 🔧 Chamando tenancy()->initialize()...\n", FILE_APPEND);
             tenancy()->initialize($tenant);
+            file_put_contents(storage_path('logs/laravel.log'), "[" . date('Y-m-d H:i:s') . "] ✅ PASSO 4 COMPLETO - Tenancy inicializado\n", FILE_APPEND);
             Log::info('✓ Passo 4: Tenancy inicializado');
 
             // Criar usuário admin
             Log::info('➤ Passo 5: Criando usuário admin...');
+            file_put_contents(storage_path('logs/laravel.log'), "[" . date('Y-m-d H:i:s') . "] 👤 Chamando createAdminUser()...\n", FILE_APPEND);
             $user = $this->createAdminUser($request);
+            file_put_contents(storage_path('logs/laravel.log'), "[" . date('Y-m-d H:i:s') . "] ✅ PASSO 5 COMPLETO - User ID: {$user->id}\n", FILE_APPEND);
             Log::info('✓ Passo 5: Usuário criado', ['user_id' => $user->id]);
 
             // Popular dados iniciais
