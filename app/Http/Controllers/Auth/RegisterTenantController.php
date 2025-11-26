@@ -32,8 +32,14 @@ class RegisterTenantController extends Controller
      */
     public function register(Request $request)
     {
-        Log::info('🚀 RegisterTenantController@register CHAMADO', [
-            'timestamp' => now()->toDateTimeString(),
+        // FORÇAR LOG IMEDIATO
+        $logMessage = '🚀🚀🚀 RegisterTenantController@register CHAMADO - ' . now()->toDateTimeString();
+        file_put_contents(storage_path('logs/laravel.log'), 
+            '[' . now() . '] production.INFO: ' . $logMessage . "\n", 
+            FILE_APPEND
+        );
+        
+        Log::info($logMessage, [
             'subdomain' => $request->subdomain,
             'email' => $request->admin_email,
         ]);
