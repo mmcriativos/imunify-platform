@@ -45,10 +45,18 @@ class RegisterTenantController extends Controller
         ]);
 
         // Validar dados
+        file_put_contents(storage_path('logs/laravel.log'), 
+            '[' . now() . '] production.INFO: ➤ Passo 0: Iniciando validação...' . "\n", 
+            FILE_APPEND
+        );
         Log::info('➤ Passo 0: Iniciando validação...');
         $validator = $this->validator($request->all());
         
         if ($validator->fails()) {
+            file_put_contents(storage_path('logs/laravel.log'), 
+                '[' . now() . '] production.ERROR: ❌ Validação falhou: ' . json_encode($validator->errors()->toArray()) . "\n", 
+                FILE_APPEND
+            );
             Log::error('❌ Validação falhou', [
                 'erros' => $validator->errors()->toArray()
             ]);
@@ -57,11 +65,23 @@ class RegisterTenantController extends Controller
                 ->withErrors($validator)
                 ->withInput();
         }
+        file_put_contents(storage_path('logs/laravel.log'), 
+            '[' . now() . '] production.INFO: ✓ Passo 0: Validação OK' . "\n", 
+            FILE_APPEND
+        );
         Log::info('✓ Passo 0: Validação OK');
 
         // Verificar se há databases disponíveis no pool
+        file_put_contents(storage_path('logs/laravel.log'), 
+            '[' . now() . '] production.INFO: ➤ Passo 0.5: Verificando pool...' . "\n", 
+            FILE_APPEND
+        );
         Log::info('➤ Passo 0.5: Verificando pool...');
         $availableCount = DatabasePool::getAvailableCount();
+        file_put_contents(storage_path('logs/laravel.log'), 
+            '[' . now() . '] production.INFO: Pool disponível: ' . $availableCount . "\n", 
+            FILE_APPEND
+        );
         Log::info('Pool disponível: ' . $availableCount);
         
         if ($availableCount === 0) {
