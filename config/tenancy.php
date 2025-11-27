@@ -22,6 +22,7 @@ return [
         'multiimune.test',      // Domínio atual do Laragon
         'imunify.test',         // Local development
         'imunify.localhost',    // Alternative local
+        'imunify.com.br',       // Domínio central em produção
     ],
 
     /**
