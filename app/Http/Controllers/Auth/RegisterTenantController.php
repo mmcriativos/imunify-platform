@@ -290,14 +290,15 @@ class RegisterTenantController extends Controller
         
         Log::info("Database '{$databaseName}' alocado para tenant '{$tenantId}'");
         
-        // Criar tenant com database específico
+        // Criar tenant com database específico do pool
         file_put_contents(storage_path('logs/laravel.log'), "[" . date('Y-m-d H:i:s') . "] 🏗️ Criando tenant via Tenant::create()\n", FILE_APPEND);
         $tenant = Tenant::create([
             'id' => $tenantId,
+            'data' => [
+                'tenancy_db_name' => $databaseName, // Salva no JSON ANTES de disparar TenantCreated
+            ],
         ]);
         
-        // Configurar database usando setInternal (salva na coluna JSON 'data')
-        $tenant->setInternal('tenancy_db_name', $databaseName);
         file_put_contents(storage_path('logs/laravel.log'), "[" . date('Y-m-d H:i:s') . "] 🏗️ Tenant criado com ID: {$tenant->id}, Database: {$databaseName}\n", FILE_APPEND);
 
         // Configurar dados
