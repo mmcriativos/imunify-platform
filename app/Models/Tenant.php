@@ -64,26 +64,6 @@ class Tenant extends BaseTenant implements TenantWithDatabase
     }
 
     /**
-     * Override: Retorna o nome do banco do pool em vez de prefix+id
-     * 
-     * O nome do banco é armazenado em tenancy_db_name (coluna JSON 'data')
-     */
-    public function getDatabase(): string
-    {
-        // Tentar obter do internal data (salvo via setInternal)
-        $dbName = $this->getInternal('tenancy_db_name');
-        
-        if ($dbName) {
-            return $dbName;
-        }
-        
-        // Fallback: usar padrão do pacote (prefix + tenant_id)
-        // Isso não deveria acontecer se DatabasePool::allocateDatabase() foi executado
-        Log::warning("Tenant {$this->id} não possui tenancy_db_name definido!");
-        return config('tenancy.database.prefix') . $this->getTenantKey() . config('tenancy.database.suffix');
-    }
-
-    /**
      * Check if tenant has access to a feature based on their plan
      */
     public function hasFeature(string $feature): bool

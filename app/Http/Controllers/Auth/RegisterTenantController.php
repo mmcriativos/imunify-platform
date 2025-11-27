@@ -118,7 +118,17 @@ class RegisterTenantController extends Controller
             // Inicializar contexto do tenant
             Log::info('➤ Passo 4: Inicializando tenancy...');
             file_put_contents(base_path('storage/logs/laravel.log'), "[" . date('Y-m-d H:i:s') . "] 🔧 Chamando tenancy()->initialize()...\n", FILE_APPEND);
+            
+            // DEBUG: Verificar qual banco está sendo usado
+            $dbName = $tenant->getInternal('tenancy_db_name');
+            file_put_contents(base_path('storage/logs/laravel.log'), "[" . date('Y-m-d H:i:s') . "] 🔍 Database do tenant: {$dbName}\n", FILE_APPEND);
+            
             tenancy()->initialize($tenant);
+            
+            // DEBUG: Verificar conexão ativa
+            $currentDb = DB::connection()->getDatabaseName();
+            file_put_contents(base_path('storage/logs/laravel.log'), "[" . date('Y-m-d H:i:s') . "] 🔍 Database ativo após initialize: {$currentDb}\n", FILE_APPEND);
+            
             // APÓS tenancy()->initialize(), o storage_path() muda para o tenant!
             // Então usamos base_path() para escrever no storage central
             file_put_contents(base_path('storage/logs/laravel.log'), "[" . date('Y-m-d H:i:s') . "] ✅ PASSO 4 COMPLETO - Tenancy inicializado\n", FILE_APPEND);
