@@ -53,8 +53,8 @@ class PoolDatabaseManager implements TenantDatabaseManager
     /**
      * Define os grants do usuário (não usado no pool)
      */
-    public function setConnection(string $connection): self
+    public function setConnection(string $connection): void
     {
-        return $this;
+        // Não faz nada - pool usa conexão padrão
     }
 }
