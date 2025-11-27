@@ -133,11 +133,15 @@ class RegisterTenantController extends Controller
 
             // Popular dados iniciais
             Log::info('➤ Passo 6: Populando dados iniciais...');
+            file_put_contents(base_path('storage/logs/laravel.log'), "[" . date('Y-m-d H:i:s') . "] 📊 Chamando seedInitialData()...\n", FILE_APPEND);
             $this->seedInitialData($tenant);
+            file_put_contents(base_path('storage/logs/laravel.log'), "[" . date('Y-m-d H:i:s') . "] ✅ PASSO 6 COMPLETO - Dados populados\n", FILE_APPEND);
             Log::info('✓ Passo 6: Dados populados');
 
             Log::info('➤ Passo 7: FAZENDO COMMIT DA TRANSAÇÃO...');
+            file_put_contents(base_path('storage/logs/laravel.log'), "[" . date('Y-m-d H:i:s') . "] 💾 Chamando DB::commit()...\n", FILE_APPEND);
             DB::connection('central')->commit();
+            file_put_contents(base_path('storage/logs/laravel.log'), "[" . date('Y-m-d H:i:s') . "] ✅✅✅ COMMIT REALIZADO COM SUCESSO!\n", FILE_APPEND);
             Log::info('✓✓✓ PASSO 7: COMMIT REALIZADO - TENANT SALVO COM SUCESSO! ✓✓✓');
 
             Log::info('Tenant criado com sucesso', [
@@ -162,14 +166,17 @@ class RegisterTenantController extends Controller
 
         // FORA DO TRY-CATCH: Criar token e redirecionar (mesmo se falhar, tenant já foi salvo)
         try {
+            file_put_contents(base_path('storage/logs/laravel.log'), "[" . date('Y-m-d H:i:s') . "] 🔐 Criando token de auto-login...\n", FILE_APPEND);
             Log::info('➤ Passo 8: Criando token de auto-login...');
             $loginToken = Str::random(60);
             
             // Usar cache store direto (bypassa CacheManager do Tenancy)
+            file_put_contents(base_path('storage/logs/laravel.log'), "[" . date('Y-m-d H:i:s') . "] 🔐 Salvando token no cache...\n", FILE_APPEND);
             app('cache')->store()->put('login_token_' . $loginToken, [
                 'tenant_id' => $tenant->id,
                 'user_email' => $user->email,
             ], now()->addMinutes(5));
+            file_put_contents(base_path('storage/logs/laravel.log'), "[" . date('Y-m-d H:i:s') . "] ✅ Token salvo: " . substr($loginToken, 0, 20) . "...\n", FILE_APPEND);
             Log::info('✓ Passo 8: Token criado', ['token' => substr($loginToken, 0, 10) . '...']);
 
             // Redirecionar para dashboard da clínica com token
@@ -177,6 +184,7 @@ class RegisterTenantController extends Controller
             $protocol = env('APP_ENV') === 'local' ? 'http://' : 'https://';
             $redirectUrl = $protocol . $domain . '/auto-login?token=' . $loginToken;
             
+            file_put_contents(base_path('storage/logs/laravel.log'), "[" . date('Y-m-d H:i:s') . "] 🌐 URL de redirect: {$redirectUrl}\n", FILE_APPEND);
             Log::info('➤ Passo 9: Redirecionando para', ['url' => $redirectUrl]);
             
             return redirect()->away($redirectUrl);
