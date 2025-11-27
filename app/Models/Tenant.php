@@ -64,6 +64,22 @@ class Tenant extends BaseTenant implements TenantWithDatabase
     }
 
     /**
+     * Override: Método usado pelo DatabaseTenancyBootstrapper
+     * para obter o nome do banco de dados do tenant
+     */
+    public function getTenantDatabaseName(): string
+    {
+        $dbName = $this->getInternal('tenancy_db_name');
+        
+        if ($dbName) {
+            return $dbName;
+        }
+        
+        // Fallback para o padrão
+        return config('tenancy.database.prefix') . $this->getTenantKey() . config('tenancy.database.suffix');
+    }
+
+    /**
      * Check if tenant has access to a feature based on their plan
      */
     public function hasFeature(string $feature): bool

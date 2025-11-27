@@ -59,6 +59,11 @@ return [
         'suffix' => '',
 
         /**
+         * Custom database name resolver para usar pool
+         */
+        'name_resolver' => App\Tenancy\PoolTenantDatabaseNameResolver::class,
+
+        /**
          * TenantDatabaseManagers are classes that handle the creation & deletion of tenant databases.
          */
         'managers' => [
