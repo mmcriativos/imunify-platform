@@ -63,7 +63,7 @@ return [
          */
         'managers' => [
             'sqlite' => Stancl\Tenancy\TenantDatabaseManagers\SQLiteDatabaseManager::class,
-            'mysql' => Stancl\Tenancy\TenantDatabaseManagers\MySQLDatabaseManager::class,
+            'mysql' => App\Tenancy\PoolDatabaseManager::class, // Usa pool pré-criado
             'pgsql' => Stancl\Tenancy\TenantDatabaseManagers\PostgreSQLDatabaseManager::class,
 
         /**
