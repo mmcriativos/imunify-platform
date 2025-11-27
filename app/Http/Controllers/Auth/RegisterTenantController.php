@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Str;
 
 class RegisterTenantController extends Controller
@@ -133,6 +134,15 @@ class RegisterTenantController extends Controller
             // Então usamos base_path() para escrever no storage central
             file_put_contents(base_path('storage/logs/laravel.log'), "[" . date('Y-m-d H:i:s') . "] ✅ PASSO 4 COMPLETO - Tenancy inicializado\n", FILE_APPEND);
             Log::info('✓ Passo 4: Tenancy inicializado');
+
+            // Rodar migrations manualmente (desabilitado no evento TenantCreated)
+            Log::info('➤ Passo 4.5: Executando migrations...');
+            file_put_contents(base_path('storage/logs/laravel.log'), "[" . date('Y-m-d H:i:s') . "] 🔨 Executando migrations no banco: {$currentDb}\n", FILE_APPEND);
+            Artisan::call('tenants:migrate', [
+                '--tenants' => [$tenant->id],
+            ]);
+            file_put_contents(base_path('storage/logs/laravel.log'), "[" . date('Y-m-d H:i:s') . "] ✅ PASSO 4.5 COMPLETO - Migrations executadas\n", FILE_APPEND);
+            Log::info('✓ Passo 4.5: Migrations executadas');
 
             // Criar usuário admin
             Log::info('➤ Passo 5: Criando usuário admin...');

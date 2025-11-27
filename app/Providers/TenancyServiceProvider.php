@@ -26,7 +26,7 @@ class TenancyServiceProvider extends ServiceProvider
             Events\TenantCreated::class => [
                 JobPipeline::make([
                     // Jobs\CreateDatabase::class, // DESABILITADO: Usamos pool de databases pré-criados
-                    Jobs\MigrateDatabase::class,
+                    // Jobs\MigrateDatabase::class, // DESABILITADO: Executado manualmente após setInternal()
                     // Jobs\SeedDatabase::class,
 
                     // Your own jobs to prepare the tenant.
