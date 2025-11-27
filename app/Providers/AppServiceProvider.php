@@ -6,8 +6,10 @@ use App\Models\Agendamento;
 use App\Models\AtendimentoVacina;
 use App\Observers\AgendamentoObserver;
 use App\Observers\AtendimentoVacinaObserver;
+use App\Observers\DomainObserver;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
+use Stancl\Tenancy\Database\Models\Domain;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -27,6 +29,7 @@ class AppServiceProvider extends ServiceProvider
         // Registrar observers
         Agendamento::observe(AgendamentoObserver::class);
         AtendimentoVacina::observe(AtendimentoVacinaObserver::class);
+        Domain::observe(DomainObserver::class);
 
         // Registrar rotas centrais após todas as outras rotas serem carregadas
         // Isso garante que a rota central "/" sobrescreva a rota tenant "/"
