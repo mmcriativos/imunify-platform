@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Log;
 
 class DatabasePool extends Model
 {
@@ -25,6 +26,13 @@ class DatabasePool extends Model
      */
     public static function allocateDatabase(string $tenantId): ?string
     {
+        // Verificar se já existe alocação para este tenant
+        $existing = self::where('tenant_id', $tenantId)->first();
+        if ($existing) {
+            Log::warning("Tenant '{$tenantId}' já possui database alocado: {$existing->database_name}");
+            return $existing->database_name;
+        }
+
         $database = self::where('in_use', false)
             ->orderBy('id')
             ->lockForUpdate()
@@ -48,19 +56,14 @@ class DatabasePool extends Model
      */
     public static function releaseDatabase(string $tenantId): bool
     {
-        $database = self::where('tenant_id', $tenantId)->first();
-
-        if (!$database) {
-            return false;
-        }
-
-        $database->update([
+        // Liberar TODOS os databases alocados para este tenant (caso tenha duplicação)
+        $count = self::where('tenant_id', $tenantId)->update([
             'in_use' => false,
             'tenant_id' => null,
             'allocated_at' => null,
         ]);
 
-        return true;
+        return $count > 0;
     }
 
     /**
