@@ -38,6 +38,9 @@ class Tenant extends BaseTenant implements TenantWithDatabase
         'timezone',
         'status',
         'trial_ends_at',
+        'grace_period_ends_at',
+        'suspended_at',
+        'archived_at',
         'subscription_ends_at',
         'cnes',
         'crm',
@@ -52,6 +55,9 @@ class Tenant extends BaseTenant implements TenantWithDatabase
     protected $casts = [
         'whatsapp_enabled' => 'boolean',
         'trial_ends_at' => 'datetime',
+        'grace_period_ends_at' => 'datetime',
+        'suspended_at' => 'datetime',
+        'archived_at' => 'datetime',
         'subscription_ends_at' => 'datetime',
     ];
 
@@ -113,6 +119,56 @@ class Tenant extends BaseTenant implements TenantWithDatabase
     public function onTrial(): bool
     {
         return $this->trial_ends_at && $this->trial_ends_at->isFuture();
+    }
+
+    /**
+     * Check if tenant is in grace period (trial expired but can still view data)
+     */
+    public function inGracePeriod(): bool
+    {
+        return $this->grace_period_ends_at && $this->grace_period_ends_at->isFuture() 
+               && (!$this->trial_ends_at || $this->trial_ends_at->isPast());
+    }
+
+    /**
+     * Check if tenant is suspended
+     */
+    public function isSuspended(): bool
+    {
+        return $this->status === 'suspended' || $this->suspended_at !== null;
+    }
+
+    /**
+     * Check if tenant is archived
+     */
+    public function isArchived(): bool
+    {
+        return $this->status === 'archived' || $this->archived_at !== null;
+    }
+
+    /**
+     * Check if tenant has active subscription
+     */
+    public function hasActiveSubscription(): bool
+    {
+        return $this->subscription_ends_at && $this->subscription_ends_at->isFuture();
+    }
+
+    /**
+     * Check if tenant can access the system (full access)
+     */
+    public function canAccess(): bool
+    {
+        return $this->isActive() && 
+               ($this->onTrial() || $this->hasActiveSubscription());
+    }
+
+    /**
+     * Check if tenant is in read-only mode
+     */
+    public function isReadOnly(): bool
+    {
+        return $this->isActive() && $this->inGracePeriod();
     }
 
     /**

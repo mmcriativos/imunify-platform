@@ -14,9 +14,13 @@
     // Verificar status do trial
     $tenant = tenant();
     $onTrial = $tenant && $tenant->onTrial();
+    $inGracePeriod = $tenant && $tenant->inGracePeriod();
     $trialEndsAt = $tenant?->trial_ends_at;
+    $gracePeriodEndsAt = $tenant?->grace_period_ends_at;
     $daysRemaining = $trialEndsAt ? now()->diffInDays($trialEndsAt, false) : 0;
     $daysRemaining = max(0, ceil($daysRemaining)); // Arredondar para cima e não deixar negativo
+    $graceDaysRemaining = $gracePeriodEndsAt ? now()->diffInDays($gracePeriodEndsAt, false) : 0;
+    $graceDaysRemaining = max(0, ceil($graceDaysRemaining));
 @endphp
 
 <!-- Banner de Trial -->
@@ -92,6 +96,90 @@
                 </p>
                 <p class="text-gray-700 text-xs font-semibold">
                     {{ $daysRemaining }} de {{ $totalDays }} dias restantes
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+@endif
+
+<!-- Banner de Período de Graça (Read-Only Mode) -->
+@if($inGracePeriod)
+<div class="mb-6">
+    <div class="bg-white rounded-2xl shadow-lg border-2 border-orange-300 overflow-hidden">
+        <div class="bg-gradient-to-r from-orange-50 to-red-50 px-8 py-6">
+            <div class="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
+                <!-- Conteúdo Principal -->
+                <div class="flex items-start gap-5 flex-1">
+                    <!-- Ícone de Alerta -->
+                    <div class="hidden sm:flex items-center justify-center w-14 h-14 bg-orange-100 rounded-2xl flex-shrink-0 animate-pulse">
+                        <svg class="w-7 h-7 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                        </svg>
+                    </div>
+                    
+                    <!-- Texto -->
+                    <div class="flex-1">
+                        <div class="flex items-center gap-3 mb-2">
+                            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-orange-100 text-orange-700 border border-orange-300">
+                                ⚠️ MODO SOMENTE LEITURA
+                            </span>
+                            <span class="text-gray-500 text-sm font-medium">
+                                Expira em {{ $gracePeriodEndsAt->format('d/m/Y') }}
+                            </span>
+                        </div>
+                        <h3 class="text-gray-900 font-bold text-xl sm:text-2xl mb-2">
+                            @if($graceDaysRemaining > 1)
+                                Ainda há tempo! Restam {{ $graceDaysRemaining }} dias para reativar
+                            @elseif($graceDaysRemaining == 1)
+                                ⏰ Último dia! Sua conta será suspensa amanhã
+                            @else
+                                🚨 Ação urgente necessária!
+                            @endif
+                        </h3>
+                        <p class="text-gray-600 text-sm sm:text-base mb-3">
+                            Sua conta está em <strong>modo somente leitura</strong>. Você pode visualizar todos os dados, 
+                            mas não pode criar ou editar nada até ativar uma assinatura.
+                        </p>
+                        <div class="bg-white border-l-4 border-red-500 p-3 rounded">
+                            <p class="text-red-800 text-sm font-semibold">
+                                ⚠️ Após o período de graça, sua conta será <strong>suspensa</strong> e você perderá o acesso completamente.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Botões de Ação Urgente -->
+                <div class="flex flex-col gap-3 w-full lg:w-auto">
+                    <a href="#" 
+                       class="inline-flex items-center justify-center gap-2 px-6 py-4 bg-gradient-to-r from-red-600 to-orange-600 text-white rounded-xl font-bold text-sm shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-200 whitespace-nowrap">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                        </svg>
+                        Reativar Conta Agora
+                    </a>
+                    <p class="text-center text-xs text-gray-600">
+                        Todos os recursos serão restaurados
+                    </p>
+                </div>
+            </div>
+            
+            <!-- Barra de Progresso de Urgência -->
+            @php
+                $totalGraceDays = 7;
+                $graceProgressPercent = min(100, max(0, (($totalGraceDays - $graceDaysRemaining) / $totalGraceDays) * 100));
+            @endphp
+            <div class="mt-5 bg-gray-300 rounded-full h-3 overflow-hidden shadow-inner">
+                <div class="bg-gradient-to-r from-orange-500 to-red-600 h-full rounded-full transition-all duration-1000" 
+                     style="width: {{ $graceProgressPercent }}%">
+                </div>
+            </div>
+            <div class="flex justify-between items-center mt-2">
+                <p class="text-gray-600 text-xs font-medium">
+                    Período de graça: {{ number_format($graceProgressPercent, 0) }}% utilizado
+                </p>
+                <p class="text-red-700 text-xs font-bold">
+                    ⏰ {{ $graceDaysRemaining }} de {{ $totalGraceDays }} dias restantes
                 </p>
             </div>
         </div>

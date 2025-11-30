@@ -12,7 +12,10 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        //
+        // Registra middleware de verificação de acesso do tenant
+        $middleware->alias([
+            'tenant.access' => \App\Http\Middleware\CheckTenantAccess::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

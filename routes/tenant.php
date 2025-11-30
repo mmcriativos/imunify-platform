@@ -64,8 +64,21 @@ Route::prefix('ajuda')->name('ajuda.')->group(function () {
     Route::get('/artigo/{slug}', [AjudaController::class, 'artigo'])->name('artigo');
 });
 
+// Páginas de status do tenant (suspensão, arquivamento)
+Route::get('/suspended', function () {
+    return view('tenant.suspended');
+})->name('suspended');
+
+Route::get('/archived', function () {
+    return view('tenant.archived');
+})->name('archived');
+
+Route::get('/subscription-required', function () {
+    return view('tenant.subscription-required');
+})->name('subscription.required');
+
 // Todas as rotas protegidas por autenticação no contexto do tenant
-Route::middleware(['auth'])->group(function () {
+Route::middleware(['auth', 'tenant.access'])->group(function () {
         
         // Dashboard
         Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
