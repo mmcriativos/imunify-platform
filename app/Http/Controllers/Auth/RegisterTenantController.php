@@ -356,12 +356,19 @@ class RegisterTenantController extends Controller
             ? $subdomain . '.localhost'
             : $subdomain . '.imunify.com.br';
 
-        $tenant->domains()->create([
+        file_put_contents(base_path('storage/logs/laravel.log'), "[" . date('Y-m-d H:i:s') . "] 🌐 Criando domínio: {$domain}\n", FILE_APPEND);
+        
+        $createdDomain = $tenant->domains()->create([
             'domain' => $domain,
         ]);
-    }
-
-    /**
+        
+        file_put_contents(base_path('storage/logs/laravel.log'), "[" . date('Y-m-d H:i:s') . "] ✅ Domínio criado: ID={$createdDomain->id}, domain={$createdDomain->domain}\n", FILE_APPEND);
+        
+        Log::info('Domínio criado', [
+            'tenant_id' => $tenant->id,
+            'domain' => $domain,
+        ]);
+    }    /**
      * Criar usuário admin
      */
     protected function createAdminUser(Request $request)
