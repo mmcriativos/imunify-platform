@@ -32,7 +32,8 @@ return [
      * To configure their behavior, see the config keys below.
      */
     'bootstrappers' => [
-        Stancl\Tenancy\Bootstrappers\DatabaseTenancyBootstrapper::class,
+        App\Tenancy\PoolDatabaseTenancyBootstrapper::class, // Bootstrapper customizado para usar pool
+        // Stancl\Tenancy\Bootstrappers\DatabaseTenancyBootstrapper::class, // Desabilitado: usando customizado
         // Stancl\Tenancy\Bootstrappers\CacheTenancyBootstrapper::class, // Desabilitado: requer cache com tags (Redis/Memcached)
         Stancl\Tenancy\Bootstrappers\FilesystemTenancyBootstrapper::class,
         Stancl\Tenancy\Bootstrappers\QueueTenancyBootstrapper::class,
