@@ -21,32 +21,30 @@
 
 <!-- Banner de Trial -->
 @if($onTrial)
-<div class="mb-6 relative overflow-hidden">
-    <div class="bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 rounded-2xl shadow-2xl border-2 border-amber-400/50">
-        <!-- Pattern de fundo -->
-        <div class="absolute inset-0 opacity-10">
-            <div class="absolute inset-0" style="background-image: radial-gradient(circle at 2px 2px, white 1px, transparent 0); background-size: 32px 32px;"></div>
-        </div>
-        
-        <div class="relative px-6 py-5">
-            <div class="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
+<div class="mb-6">
+    <div class="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden">
+        <div class="bg-gradient-to-r from-blue-50 to-cyan-50 px-8 py-6 border-b border-blue-100">
+            <div class="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
                 <!-- Conteúdo Principal -->
-                <div class="flex items-start gap-4">
+                <div class="flex items-start gap-5 flex-1">
                     <!-- Ícone -->
-                    <div class="hidden sm:flex items-center justify-center w-14 h-14 bg-white/20 backdrop-blur-sm rounded-2xl border-2 border-white/40 flex-shrink-0">
-                        <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div class="hidden sm:flex items-center justify-center w-14 h-14 bg-blue-100 rounded-2xl flex-shrink-0">
+                        <svg class="w-7 h-7 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
                         </svg>
                     </div>
                     
                     <!-- Texto -->
                     <div class="flex-1">
-                        <div class="flex items-center gap-2 mb-1">
-                            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-white/30 text-white border border-white/40 backdrop-blur-sm">
+                        <div class="flex items-center gap-3 mb-2">
+                            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-700 border border-blue-200">
                                 🎉 PERÍODO DE TESTE
                             </span>
+                            <span class="text-gray-500 text-sm font-medium">
+                                Válido até {{ $trialEndsAt->format('d/m/Y') }}
+                            </span>
                         </div>
-                        <h3 class="text-white font-black text-xl sm:text-2xl mb-1 drop-shadow-lg">
+                        <h3 class="text-gray-900 font-bold text-xl sm:text-2xl mb-2">
                             @if($daysRemaining > 1)
                                 Restam {{ $daysRemaining }} dias de teste grátis!
                             @elseif($daysRemaining == 1)
@@ -55,12 +53,8 @@
                                 Seu período de teste termina hoje!
                             @endif
                         </h3>
-                        <p class="text-white/95 text-sm sm:text-base font-medium">
-                            Aproveite todos os recursos premium até 
-                            <span class="font-bold underline decoration-2 decoration-white/50">
-                                {{ $trialEndsAt->format('d/m/Y') }}
-                            </span>
-                            e escolha o melhor plano para sua clínica.
+                        <p class="text-gray-600 text-sm sm:text-base">
+                            Aproveite todos os recursos premium e escolha o melhor plano para sua clínica.
                         </p>
                     </div>
                 </div>
@@ -68,15 +62,15 @@
                 <!-- Botões de Ação -->
                 <div class="flex flex-col sm:flex-row gap-3 w-full lg:w-auto">
                     <a href="#" 
-                       class="inline-flex items-center justify-center gap-2 px-6 py-3 bg-white text-amber-600 rounded-xl font-bold text-sm shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-200 whitespace-nowrap group">
-                        <svg class="w-5 h-5 group-hover:rotate-12 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                       class="inline-flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-[#3ebddb] to-[#77ca73] text-white rounded-xl font-semibold text-sm shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-200 whitespace-nowrap">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/>
                         </svg>
                         Ver Planos
                     </a>
                     <button type="button" 
                             onclick="this.closest('.mb-6').style.display='none'" 
-                            class="inline-flex items-center justify-center gap-2 px-4 py-3 bg-white/10 backdrop-blur-sm text-white rounded-xl font-semibold text-sm border-2 border-white/30 hover:bg-white/20 transition-all whitespace-nowrap">
+                            class="inline-flex items-center justify-center gap-2 px-5 py-3 bg-gray-100 text-gray-700 rounded-xl font-semibold text-sm hover:bg-gray-200 transition-all whitespace-nowrap">
                         Lembrar depois
                     </button>
                 </div>
@@ -87,14 +81,19 @@
                 $totalDays = 7; // Trial de 7 dias
                 $progressPercent = min(100, max(0, (($totalDays - $daysRemaining) / $totalDays) * 100));
             @endphp
-            <div class="mt-4 bg-white/20 rounded-full h-2 overflow-hidden backdrop-blur-sm">
-                <div class="bg-white h-full rounded-full transition-all duration-1000 shadow-lg" 
+            <div class="mt-5 bg-gray-200 rounded-full h-2.5 overflow-hidden">
+                <div class="bg-gradient-to-r from-[#3ebddb] to-[#77ca73] h-full rounded-full transition-all duration-1000" 
                      style="width: {{ $progressPercent }}%">
                 </div>
             </div>
-            <p class="text-white/80 text-xs font-medium mt-1.5 text-right">
-                {{ number_format($progressPercent, 0) }}% do período de teste utilizado
-            </p>
+            <div class="flex justify-between items-center mt-2">
+                <p class="text-gray-500 text-xs font-medium">
+                    {{ number_format($progressPercent, 0) }}% do período utilizado
+                </p>
+                <p class="text-gray-700 text-xs font-semibold">
+                    {{ $daysRemaining }} de {{ $totalDays }} dias restantes
+                </p>
+            </div>
         </div>
     </div>
 </div>
