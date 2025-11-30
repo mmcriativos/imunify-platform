@@ -327,10 +327,12 @@ class RegisterTenantController extends Controller
             'timezone' => 'America/Sao_Paulo',
             'trial_ends_at' => now()->addDays(7),
             'subscription_ends_at' => now()->addDays(7),
-            'data' => [
-                'tenancy_db_name' => $databaseName, // Salva no JSON
-            ],
         ]);
+        
+        // Salvar database do pool no internal data (deve ser feito APÓS create)
+        file_put_contents(storage_path('logs/laravel.log'), "[" . date('Y-m-d H:i:s') . "] 🏗️ Salvando tenancy_db_name via setInternal()\n", FILE_APPEND);
+        $tenant->setInternal('tenancy_db_name', $databaseName);
+        $tenant->save();
         
         file_put_contents(storage_path('logs/laravel.log'), "[" . date('Y-m-d H:i:s') . "] 🏗️ Tenant criado com ID: {$tenant->id}, Database: {$databaseName}\n", FILE_APPEND);
         
