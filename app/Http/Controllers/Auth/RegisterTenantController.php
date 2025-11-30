@@ -304,31 +304,25 @@ class RegisterTenantController extends Controller
         file_put_contents(storage_path('logs/laravel.log'), "[" . date('Y-m-d H:i:s') . "] 🏗️ Criando tenant via Tenant::create()\n", FILE_APPEND);
         $tenant = Tenant::create([
             'id' => $tenantId,
+            'plan_id' => $request->plan_id,
+            'clinic_name' => $request->clinic_name,
+            'email' => $request->email,
+            'phone' => $request->phone,
+            'cnpj' => $request->cnpj,
+            'address' => $request->address,
+            'city' => $request->city,
+            'state' => $request->state,
+            'zip_code' => $request->cep,
+            'status' => 'active',
+            'timezone' => 'America/Sao_Paulo',
+            'trial_ends_at' => now()->addDays(7),
+            'subscription_ends_at' => now()->addDays(7),
             'data' => [
-                'tenancy_db_name' => $databaseName, // Salva no JSON ANTES de disparar TenantCreated
+                'tenancy_db_name' => $databaseName, // Salva no JSON
             ],
         ]);
         
         file_put_contents(storage_path('logs/laravel.log'), "[" . date('Y-m-d H:i:s') . "] 🏗️ Tenant criado com ID: {$tenant->id}, Database: {$databaseName}\n", FILE_APPEND);
-
-        // Configurar dados
-        $tenant->plan_id = $request->plan_id;
-        $tenant->clinic_name = $request->clinic_name;
-        $tenant->email = $request->email;
-        $tenant->phone = $request->phone;
-        $tenant->cnpj = $request->cnpj;
-        $tenant->address = $request->address;
-        $tenant->city = $request->city;
-        $tenant->state = $request->state;
-        $tenant->zip_code = $request->cep;
-        $tenant->status = 'active';
-        $tenant->timezone = 'America/Sao_Paulo';
-        
-        // Trial de 7 dias
-        $tenant->trial_ends_at = now()->addDays(7);
-        $tenant->subscription_ends_at = now()->addDays(7);
-        
-        $tenant->save();
         
         // Notificar admin se pool está ficando baixo
         if (DatabasePool::isPoolLow()) {
