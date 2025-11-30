@@ -10,7 +10,95 @@
         5 => 'Maio', 6 => 'Junho', 7 => 'Julho', 8 => 'Agosto', 
         9 => 'Setembro', 10 => 'Outubro', 11 => 'Novembro', 12 => 'Dezembro'
     ];
+    
+    // Verificar status do trial
+    $tenant = tenant();
+    $onTrial = $tenant && $tenant->onTrial();
+    $trialEndsAt = $tenant?->trial_ends_at;
+    $daysRemaining = $trialEndsAt ? now()->diffInDays($trialEndsAt, false) : 0;
+    $daysRemaining = max(0, ceil($daysRemaining)); // Arredondar para cima e não deixar negativo
 @endphp
+
+<!-- Banner de Trial -->
+@if($onTrial)
+<div class="mb-6 relative overflow-hidden">
+    <div class="bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 rounded-2xl shadow-2xl border-2 border-amber-400/50">
+        <!-- Pattern de fundo -->
+        <div class="absolute inset-0 opacity-10">
+            <div class="absolute inset-0" style="background-image: radial-gradient(circle at 2px 2px, white 1px, transparent 0); background-size: 32px 32px;"></div>
+        </div>
+        
+        <div class="relative px-6 py-5">
+            <div class="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
+                <!-- Conteúdo Principal -->
+                <div class="flex items-start gap-4">
+                    <!-- Ícone -->
+                    <div class="hidden sm:flex items-center justify-center w-14 h-14 bg-white/20 backdrop-blur-sm rounded-2xl border-2 border-white/40 flex-shrink-0">
+                        <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                    </div>
+                    
+                    <!-- Texto -->
+                    <div class="flex-1">
+                        <div class="flex items-center gap-2 mb-1">
+                            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-white/30 text-white border border-white/40 backdrop-blur-sm">
+                                🎉 PERÍODO DE TESTE
+                            </span>
+                        </div>
+                        <h3 class="text-white font-black text-xl sm:text-2xl mb-1 drop-shadow-lg">
+                            @if($daysRemaining > 1)
+                                Restam {{ $daysRemaining }} dias de teste grátis!
+                            @elseif($daysRemaining == 1)
+                                Último dia de teste grátis!
+                            @else
+                                Seu período de teste termina hoje!
+                            @endif
+                        </h3>
+                        <p class="text-white/95 text-sm sm:text-base font-medium">
+                            Aproveite todos os recursos premium até 
+                            <span class="font-bold underline decoration-2 decoration-white/50">
+                                {{ $trialEndsAt->format('d/m/Y') }}
+                            </span>
+                            e escolha o melhor plano para sua clínica.
+                        </p>
+                    </div>
+                </div>
+                
+                <!-- Botões de Ação -->
+                <div class="flex flex-col sm:flex-row gap-3 w-full lg:w-auto">
+                    <a href="#" 
+                       class="inline-flex items-center justify-center gap-2 px-6 py-3 bg-white text-amber-600 rounded-xl font-bold text-sm shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-200 whitespace-nowrap group">
+                        <svg class="w-5 h-5 group-hover:rotate-12 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/>
+                        </svg>
+                        Ver Planos
+                    </a>
+                    <button type="button" 
+                            onclick="this.closest('.mb-6').style.display='none'" 
+                            class="inline-flex items-center justify-center gap-2 px-4 py-3 bg-white/10 backdrop-blur-sm text-white rounded-xl font-semibold text-sm border-2 border-white/30 hover:bg-white/20 transition-all whitespace-nowrap">
+                        Lembrar depois
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Barra de Progresso -->
+            @php
+                $totalDays = 7; // Trial de 7 dias
+                $progressPercent = min(100, max(0, (($totalDays - $daysRemaining) / $totalDays) * 100));
+            @endphp
+            <div class="mt-4 bg-white/20 rounded-full h-2 overflow-hidden backdrop-blur-sm">
+                <div class="bg-white h-full rounded-full transition-all duration-1000 shadow-lg" 
+                     style="width: {{ $progressPercent }}%">
+                </div>
+            </div>
+            <p class="text-white/80 text-xs font-medium mt-1.5 text-right">
+                {{ number_format($progressPercent, 0) }}% do período de teste utilizado
+            </p>
+        </div>
+    </div>
+</div>
+@endif
 
 <!-- Filtros e Resumo do Período -->
 <div class="bg-white shadow-lg rounded-2xl border border-gray-100 mb-6">
