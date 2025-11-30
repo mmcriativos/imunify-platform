@@ -120,15 +120,25 @@ class RegisterTenantController extends Controller
             Log::info('➤ Passo 4: Inicializando tenancy...');
             file_put_contents(base_path('storage/logs/laravel.log'), "[" . date('Y-m-d H:i:s') . "] 🔧 Chamando tenancy()->initialize()...\n", FILE_APPEND);
             
-            // DEBUG: Verificar qual banco está sendo usado
-            $dbName = $tenant->getInternal('tenancy_db_name');
-            file_put_contents(base_path('storage/logs/laravel.log'), "[" . date('Y-m-d H:i:s') . "] 🔍 Database do tenant: {$dbName}\n", FILE_APPEND);
+            // DEBUG: Verificar dados do tenant ANTES do initialize
+            $dbNameFromData = $tenant->getInternal('tenancy_db_name');
+            $dbNameFromMethod = $tenant->getTenantDatabaseName();
+            $tenantDataJson = json_encode($tenant->data);
+            
+            file_put_contents(base_path('storage/logs/laravel.log'), "[" . date('Y-m-d H:i:s') . "] 🔍 DEBUG TENANT:\n", FILE_APPEND);
+            file_put_contents(base_path('storage/logs/laravel.log'), "[" . date('Y-m-d H:i:s') . "]    - Tenant ID: {$tenant->id}\n", FILE_APPEND);
+            file_put_contents(base_path('storage/logs/laravel.log'), "[" . date('Y-m-d H:i:s') . "]    - Data JSON: {$tenantDataJson}\n", FILE_APPEND);
+            file_put_contents(base_path('storage/logs/laravel.log'), "[" . date('Y-m-d H:i:s') . "]    - getInternal('tenancy_db_name'): {$dbNameFromData}\n", FILE_APPEND);
+            file_put_contents(base_path('storage/logs/laravel.log'), "[" . date('Y-m-d H:i:s') . "]    - getTenantDatabaseName(): {$dbNameFromMethod}\n", FILE_APPEND);
             
             tenancy()->initialize($tenant);
             
-            // DEBUG: Verificar conexão ativa
+            // DEBUG: Verificar conexão ativa APÓS initialize
             $currentDb = DB::connection()->getDatabaseName();
-            file_put_contents(base_path('storage/logs/laravel.log'), "[" . date('Y-m-d H:i:s') . "] 🔍 Database ativo após initialize: {$currentDb}\n", FILE_APPEND);
+            $tenantConfigDb = config('database.connections.tenant.database');
+            file_put_contents(base_path('storage/logs/laravel.log'), "[" . date('Y-m-d H:i:s') . "] 🔍 APÓS INITIALIZE:\n", FILE_APPEND);
+            file_put_contents(base_path('storage/logs/laravel.log'), "[" . date('Y-m-d H:i:s') . "]    - DB::connection()->getDatabaseName(): {$currentDb}\n", FILE_APPEND);
+            file_put_contents(base_path('storage/logs/laravel.log'), "[" . date('Y-m-d H:i:s') . "]    - config('database.connections.tenant.database'): {$tenantConfigDb}\n", FILE_APPEND);
             
             // APÓS tenancy()->initialize(), o storage_path() muda para o tenant!
             // Então usamos base_path() para escrever no storage central
