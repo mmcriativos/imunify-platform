@@ -82,6 +82,24 @@
             ]
         ],
         [
+            'section' => 'Configurações',
+            'items' => [
+                [
+                    'label' => 'Usuários',
+                    'route' => 'users.index',
+                    'active' => 'users.*',
+                    'icon' => '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>',
+                    'badge' => function() {
+                        $tenant = tenant();
+                        $plan = $tenant->plan;
+                        $maxUsers = $plan->max_users ?? 1;
+                        $currentUsers = \App\Models\User::where('is_active', true)->count();
+                        return $currentUsers . '/' . $maxUsers;
+                    },
+                ],
+            ]
+        ],
+        [
             'section' => 'Comunicação',
             'items' => [
                 [
@@ -139,9 +157,14 @@
                                 <span class="{{ request()->routeIs($item['active']) ? 'text-[#3ebddb]' : 'text-white/80 group-hover:text-white' }}">
                                     {!! $item['icon'] !!}
                                 </span>
-                                <span>{{ $item['label'] }}</span>
+                                <span class="flex-1">{{ $item['label'] }}</span>
+                                @if(isset($item['badge']))
+                                    <span class="px-2 py-0.5 text-xs font-bold {{ request()->routeIs($item['active']) ? 'bg-[#3ebddb] text-white' : 'bg-white/20 text-white' }} rounded-full">
+                                        {{ is_callable($item['badge']) ? $item['badge']() : $item['badge'] }}
+                                    </span>
+                                @endif
                                 @if(request()->routeIs($item['active']))
-                                    <div class="ml-auto w-2 h-2 bg-[#77ca73] rounded-full shadow-lg"></div>
+                                    <div class="w-2 h-2 bg-[#77ca73] rounded-full shadow-lg"></div>
                                 @endif
                             </a>
                         </li>
@@ -252,7 +275,12 @@
                                     <span class="{{ request()->routeIs($item['active']) ? 'text-[#3ebddb]' : 'text-white/80' }}">
                                         {!! $item['icon'] !!}
                                     </span>
-                                    <span>{{ $item['label'] }}</span>
+                                    <span class="flex-1">{{ $item['label'] }}</span>
+                                    @if(isset($item['badge']))
+                                        <span class="px-2 py-0.5 text-xs font-bold {{ request()->routeIs($item['active']) ? 'bg-[#3ebddb] text-white' : 'bg-white/20 text-white' }} rounded-full">
+                                            {{ is_callable($item['badge']) ? $item['badge']() : $item['badge'] }}
+                                        </span>
+                                    @endif
                                 </a>
                             </li>
                         @endforeach
