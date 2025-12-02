@@ -21,6 +21,11 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'role',
+        'is_active',
+        'phone',
+        'last_login_at',
+        'last_login_ip',
     ];
 
     /**
@@ -43,6 +48,65 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'is_active' => 'boolean',
+            'last_login_at' => 'datetime',
         ];
+    }
+
+    /**
+     * Verifica se o usuário é administrador
+     */
+    public function isAdmin(): bool
+    {
+        return $this->role === 'admin';
+    }
+
+    /**
+     * Verifica se o usuário é gerente ou superior
+     */
+    public function isManager(): bool
+    {
+        return in_array($this->role, ['admin', 'manager']);
+    }
+
+    /**
+     * Verifica se o usuário pode gerenciar outros usuários
+     */
+    public function canManageUsers(): bool
+    {
+        return $this->role === 'admin';
+    }
+
+    /**
+     * Verifica se o usuário tem permissão para uma ação
+     */
+    public function hasPermission(string $permission): bool
+    {
+        $permissions = [
+            'admin' => ['*'], // Acesso total
+            'manager' => ['view_dashboard', 'manage_patients', 'manage_appointments', 'manage_inventory', 'view_reports'],
+            'operator' => ['view_dashboard', 'manage_patients', 'manage_appointments'],
+            'viewer' => ['view_dashboard', 'view_patients', 'view_appointments'],
+        ];
+
+        $userPermissions = $permissions[$this->role] ?? [];
+
+        return in_array('*', $userPermissions) || in_array($permission, $userPermissions);
+    }
+
+    /**
+     * Scope para usuários ativos
+     */
+    public function scopeActive($query)
+    {
+        return $query->where('is_active', true);
+    }
+
+    /**
+     * Scope para usuários por role
+     */
+    public function scopeByRole($query, string $role)
+    {
+        return $query->where('role', $role);
     }
 }

@@ -64,7 +64,18 @@ class LoginController extends Controller
 
         if (Auth::attempt($credentials, $request->boolean('remember'))) {
             $request->session()->regenerate();
-            Log::info('Login bem-sucedido');
+            
+            // Registrar último acesso
+            $user = Auth::user();
+            $user->last_login_at = now();
+            $user->last_login_ip = $request->ip();
+            $user->save();
+            
+            Log::info('Login bem-sucedido', [
+                'user_id' => $user->id,
+                'ip' => $request->ip(),
+            ]);
+            
             return redirect()->intended('/dashboard');
         }
 
