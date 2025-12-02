@@ -83,11 +83,13 @@
         ],
         [
             'section' => 'Configurações',
+            'permission' => 'manage_users', // Apenas admin pode ver esta seção
             'items' => [
                 [
                     'label' => 'Usuários',
                     'route' => 'users.index',
                     'active' => 'users.*',
+                    'permission' => 'manage_users',
                     'icon' => '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>',
                     'badge' => function() {
                         $tenant = tenant();
@@ -140,37 +142,43 @@
     <!-- Menu de Navegação -->
     <nav class="flex-1 px-4 py-4 overflow-y-auto scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent">
         @foreach($menuItems as $group)
-            <div class="mb-6">
-                <h3 class="px-3 mb-3 text-xs font-extrabold text-white/60 uppercase tracking-wider">
-                    {{ $group['section'] }}
-                </h3>
-                <ul class="space-y-1.5">
-                    @foreach($group['items'] as $item)
-                        <li>
-                            <a 
-                                href="{{ route($item['route']) }}" 
-                                class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 group
-                                    {{ request()->routeIs($item['active']) 
-                                        ? 'bg-white text-[#3ebddb] shadow-lg transform scale-[1.02]' 
-                                        : 'text-white/90 hover:bg-white/20 hover:text-white hover:translate-x-1' }}"
-                            >
-                                <span class="{{ request()->routeIs($item['active']) ? 'text-[#3ebddb]' : 'text-white/80 group-hover:text-white' }}">
-                                    {!! $item['icon'] !!}
-                                </span>
-                                <span class="flex-1">{{ $item['label'] }}</span>
-                                @if(isset($item['badge']))
-                                    <span class="px-2 py-0.5 text-xs font-bold {{ request()->routeIs($item['active']) ? 'bg-[#3ebddb] text-white' : 'bg-white/20 text-white' }} rounded-full">
-                                        {{ is_callable($item['badge']) ? $item['badge']() : $item['badge'] }}
-                                    </span>
-                                @endif
-                                @if(request()->routeIs($item['active']))
-                                    <div class="w-2 h-2 bg-[#77ca73] rounded-full shadow-lg"></div>
-                                @endif
-                            </a>
-                        </li>
-                    @endforeach
-                </ul>
-            </div>
+            {{-- Verificar se usuário tem permissão para ver a seção --}}
+            @if(!isset($group['permission']) || auth()->user()->hasPermission($group['permission']))
+                <div class="mb-6">
+                    <h3 class="px-3 mb-3 text-xs font-extrabold text-white/60 uppercase tracking-wider">
+                        {{ $group['section'] }}
+                    </h3>
+                    <ul class="space-y-1.5">
+                        @foreach($group['items'] as $item)
+                            {{-- Verificar se usuário tem permissão para ver o item --}}
+                            @if(!isset($item['permission']) || auth()->user()->hasPermission($item['permission']))
+                                <li>
+                                    <a 
+                                        href="{{ route($item['route']) }}" 
+                                        class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 group
+                                            {{ request()->routeIs($item['active']) 
+                                                ? 'bg-white text-[#3ebddb] shadow-lg transform scale-[1.02]' 
+                                                : 'text-white/90 hover:bg-white/20 hover:text-white hover:translate-x-1' }}"
+                                    >
+                                        <span class="{{ request()->routeIs($item['active']) ? 'text-[#3ebddb]' : 'text-white/80 group-hover:text-white' }}">
+                                            {!! $item['icon'] !!}
+                                        </span>
+                                        <span class="flex-1">{{ $item['label'] }}</span>
+                                        @if(isset($item['badge']))
+                                            <span class="px-2 py-0.5 text-xs font-bold {{ request()->routeIs($item['active']) ? 'bg-[#3ebddb] text-white' : 'bg-white/20 text-white' }} rounded-full">
+                                                {{ is_callable($item['badge']) ? $item['badge']() : $item['badge'] }}
+                                            </span>
+                                        @endif
+                                        @if(request()->routeIs($item['active']))
+                                            <div class="w-2 h-2 bg-[#77ca73] rounded-full shadow-lg"></div>
+                                        @endif
+                                    </a>
+                                </li>
+                            @endif
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
         @endforeach
     </nav>
 
@@ -258,34 +266,40 @@
         <!-- Menu Mobile -->
         <nav class="flex-1 px-4 py-4 overflow-y-auto">
             @foreach($menuItems as $group)
-                <div class="mb-6">
-                    <h3 class="px-3 mb-3 text-xs font-extrabold text-white/60 uppercase tracking-wider">
-                        {{ $group['section'] }}
-                    </h3>
-                    <ul class="space-y-1.5">
-                        @foreach($group['items'] as $item)
-                            <li>
-                                <a 
-                                    href="{{ route($item['route']) }}" 
-                                    class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all
-                                        {{ request()->routeIs($item['active']) 
-                                            ? 'bg-white text-[#3ebddb] shadow-lg' 
-                                            : 'text-white/90 hover:bg-white/20' }}"
-                                >
-                                    <span class="{{ request()->routeIs($item['active']) ? 'text-[#3ebddb]' : 'text-white/80' }}">
-                                        {!! $item['icon'] !!}
-                                    </span>
-                                    <span class="flex-1">{{ $item['label'] }}</span>
-                                    @if(isset($item['badge']))
-                                        <span class="px-2 py-0.5 text-xs font-bold {{ request()->routeIs($item['active']) ? 'bg-[#3ebddb] text-white' : 'bg-white/20 text-white' }} rounded-full">
-                                            {{ is_callable($item['badge']) ? $item['badge']() : $item['badge'] }}
-                                        </span>
-                                    @endif
-                                </a>
-                            </li>
-                        @endforeach
-                    </ul>
-                </div>
+                {{-- Verificar permissão para seção --}}
+                @if(!isset($group['permission']) || auth()->user()->hasPermission($group['permission']))
+                    <div class="mb-6">
+                        <h3 class="px-3 mb-3 text-xs font-extrabold text-white/60 uppercase tracking-wider">
+                            {{ $group['section'] }}
+                        </h3>
+                        <ul class="space-y-1.5">
+                            @foreach($group['items'] as $item)
+                                {{-- Verificar permissão para item --}}
+                                @if(!isset($item['permission']) || auth()->user()->hasPermission($item['permission']))
+                                    <li>
+                                        <a 
+                                            href="{{ route($item['route']) }}" 
+                                            class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all
+                                                {{ request()->routeIs($item['active']) 
+                                                    ? 'bg-white text-[#3ebddb] shadow-lg' 
+                                                    : 'text-white/90 hover:bg-white/20' }}"
+                                        >
+                                            <span class="{{ request()->routeIs($item['active']) ? 'text-[#3ebddb]' : 'text-white/80' }}">
+                                                {!! $item['icon'] !!}
+                                            </span>
+                                            <span class="flex-1">{{ $item['label'] }}</span>
+                                            @if(isset($item['badge']))
+                                                <span class="px-2 py-0.5 text-xs font-bold {{ request()->routeIs($item['active']) ? 'bg-[#3ebddb] text-white' : 'bg-white/20 text-white' }} rounded-full">
+                                                    {{ is_callable($item['badge']) ? $item['badge']() : $item['badge'] }}
+                                                </span>
+                                            @endif
+                                        </a>
+                                    </li>
+                                @endif
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
             @endforeach
         </nav>
 

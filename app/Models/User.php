@@ -84,14 +84,38 @@ class User extends Authenticatable
     {
         $permissions = [
             'admin' => ['*'], // Acesso total
-            'manager' => ['view_dashboard', 'manage_patients', 'manage_appointments', 'manage_inventory', 'view_reports'],
-            'operator' => ['view_dashboard', 'manage_patients', 'manage_appointments'],
-            'viewer' => ['view_dashboard', 'view_patients', 'view_appointments'],
+            'manager' => [
+                'view_dashboard', 
+                'manage_patients', 
+                'manage_appointments', 
+                'manage_inventory', 
+                'view_reports'
+            ],
+            'operator' => [
+                'view_dashboard', 
+                'manage_patients', 
+                'manage_appointments'
+            ],
+            'viewer' => [
+                'view_dashboard', 
+                'view_patients', 
+                'view_appointments'
+            ],
         ];
 
         $userPermissions = $permissions[$this->role] ?? [];
 
-        return in_array('*', $userPermissions) || in_array($permission, $userPermissions);
+        // Admin tem acesso a tudo
+        if (in_array('*', $userPermissions)) {
+            return true;
+        }
+
+        // Permissão manage_users apenas para admin
+        if ($permission === 'manage_users') {
+            return $this->isAdmin();
+        }
+
+        return in_array($permission, $userPermissions);
     }
 
     /**

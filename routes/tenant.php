@@ -83,7 +83,7 @@ Route::middleware(['auth', 'tenant.access'])->group(function () {
         // Dashboard
         Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
         
-        // Gerenciamento de Usuários (apenas admin)
+        // Gerenciamento de Usuários (apenas admin - verificação feita no controller)
         Route::resource('users', \App\Http\Controllers\UserManagementController::class);
         Route::patch('/users/{user}/toggle-status', [\App\Http\Controllers\UserManagementController::class, 'toggleStatus'])
             ->name('users.toggle-status');
