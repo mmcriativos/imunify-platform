@@ -3,8 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Mail\UserCredentialsMail;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Validation\Rules\Password;
 
 class UserManagementController extends Controller
@@ -80,17 +82,30 @@ class UserManagementController extends Controller
             'password' => ['required', Password::min(8)],
         ]);
 
+        // Guardar a senha em texto plano temporariamente para enviar por email
+        $plainPassword = $validated['password'];
+
         $user = User::create([
             'name' => $validated['name'],
             'email' => $validated['email'],
             'phone' => $validated['phone'],
             'role' => $validated['role'],
-            'password' => Hash::make($validated['password']),
+            'password' => Hash::make($plainPassword),
             'is_active' => true,
         ]);
 
+        // Enviar email com credenciais
+        try {
+            $tenantDomain = tenant()->id . '.' . config('app.main_domain', parse_url(config('app.url'), PHP_URL_HOST));
+            Mail::to($user->email)->send(new UserCredentialsMail($user, $plainPassword, $tenantDomain));
+        } catch (\Exception $e) {
+            \Log::error('Falha ao enviar email de credenciais: ' . $e->getMessage());
+            return redirect()->route('users.index')
+                ->with('warning', 'Usuário criado, mas houve um erro ao enviar o email. Credenciais: ' . $user->email . ' / ' . $plainPassword);
+        }
+
         return redirect()->route('users.index')
-            ->with('success', 'Usuário criado com sucesso!');
+            ->with('success', 'Usuário criado com sucesso! Um email com as credenciais foi enviado para ' . $user->email);
     }
 
     /**
