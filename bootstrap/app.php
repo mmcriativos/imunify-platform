@@ -12,6 +12,9 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        // Middleware global para tratar erros de banco de dados
+        $middleware->append(\App\Http\Middleware\HandleDatabaseErrors::class);
+        
         // Registra middleware de verificação de acesso do tenant
         $middleware->alias([
             'tenant.access' => \App\Http\Middleware\CheckTenantAccess::class,
