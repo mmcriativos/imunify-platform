@@ -33,6 +33,9 @@ echo -e "${BLUE}🔨 Compilando assets...${NC}"
 npm run build
 
 # 5. Migrations
+echo -e "${BLUE}🔧 Corrigindo migrations problemáticas (se houver)...${NC}"
+php fix_migrations_production.php
+
 echo -e "${BLUE}🗄️  Executando migrations centrais...${NC}"
 php artisan migrate --force
 
