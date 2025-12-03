@@ -21,6 +21,8 @@ use App\Http\Controllers\NotificacoesController;
 use App\Http\Controllers\AjudaController;
 use App\Http\Controllers\CampanhasController;
 use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\Auth\ForgotPasswordController;
+use App\Http\Controllers\Auth\ResetPasswordController;
 
 /*
 |--------------------------------------------------------------------------
@@ -48,6 +50,12 @@ Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 
 // Auto-login após registro de tenant
 Route::get('/auto-login', [LoginController::class, 'autoLogin'])->name('auto.login');
+
+// Redefinição de Senha
+Route::get('/password/reset', [ForgotPasswordController::class, 'showLinkRequestForm'])->name('password.request');
+Route::post('/password/email', [ForgotPasswordController::class, 'sendResetLinkEmail'])->name('password.email');
+Route::get('/password/reset/{token}', [ResetPasswordController::class, 'showResetForm'])->name('password.reset');
+Route::post('/password/reset', [ResetPasswordController::class, 'reset'])->name('password.update');
 
 // Webhook WhatsApp (PÚBLICO - Z-API precisa acessar no contexto do tenant)
 Route::post('/webhook/whatsapp', [WhatsAppWebhookController::class, 'receberResposta'])->name('webhook.whatsapp');
