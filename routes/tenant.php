@@ -91,6 +91,11 @@ Route::middleware(['auth', 'tenant.access'])->group(function () {
         // Dashboard
         Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
         
+        // Perfil do Usuário
+        Route::get('/profile', [\App\Http\Controllers\ProfileController::class, 'edit'])->name('profile.edit');
+        Route::patch('/profile', [\App\Http\Controllers\ProfileController::class, 'update'])->name('profile.update');
+        Route::delete('/profile', [\App\Http\Controllers\ProfileController::class, 'destroy'])->name('profile.destroy');
+        
         // Gerenciamento de Usuários (apenas admin - verificação feita no controller)
         Route::resource('users', \App\Http\Controllers\UserManagementController::class);
         Route::patch('/users/{user}/toggle-status', [\App\Http\Controllers\UserManagementController::class, 'toggleStatus'])

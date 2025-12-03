@@ -119,8 +119,8 @@ class UserManagementController extends Controller
 
         // Não pode editar o próprio usuário aqui (tem rota de profile)
         if ($user->id === auth()->id()) {
-            return redirect()->route('users.index')
-                ->with('error', 'Use a página de perfil para editar seus próprios dados.');
+            return redirect()->route('profile.edit')
+                ->with('info', 'Use esta página para editar seu perfil.');
         }
 
         return view('users.edit', compact('user'));
