@@ -33,8 +33,12 @@ echo -e "${BLUE}🔨 Compilando assets...${NC}"
 npm run build
 
 # 5. Migrations
-echo -e "${BLUE}🗄️  Executando migrations...${NC}"
+echo -e "${BLUE}🗄️  Executando migrations centrais...${NC}"
 php artisan migrate --force
+
+# 5.1. Migrations dos Tenants
+echo -e "${BLUE}🏢 Executando migrations dos tenants...${NC}"
+php artisan tenants:run migrate
 
 # 6. Cache
 echo -e "${BLUE}⚡ Otimizando cache...${NC}"
