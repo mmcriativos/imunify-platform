@@ -34,35 +34,78 @@ class LoginController extends Controller
         $tenantId = tenancy()->initialized ? tenant('id') : 'NÃO INICIALIZADA';
         $database = tenancy()->initialized ? DB::connection()->getDatabaseName() : 'NÃO CONECTADO';
         
-        Log::info('Tentativa de login', [
+        $debugInfo = [
+            'timestamp' => now()->format('Y-m-d H:i:s'),
             'email' => $credentials['email'],
+            'password_length' => strlen($credentials['password']),
             'domain' => request()->getHost(),
             'tenant_id' => $tenantId,
             'database' => $database,
+            'guard' => config('auth.defaults.guard'),
+            'provider' => config('auth.defaults.provider'),
+        ];
+        
+        Log::info('=== TENTATIVA DE LOGIN ===', $debugInfo);
+        
+        // Buscar ALL users para debug
+        $allUsers = \App\Models\User::all(['id', 'name', 'email', 'role', 'is_active']);
+        Log::info('Usuários no banco', [
+            'total' => $allUsers->count(),
+            'usuarios' => $allUsers->toArray(),
         ]);
 
         // Verificar se usuário existe
         $user = \App\Models\User::where('email', $credentials['email'])->first();
+        
         if ($user) {
-            Log::info('Usuário encontrado', [
+            $userDebug = [
                 'user_id' => $user->id,
+                'user_name' => $user->name,
+                'user_email' => $user->email,
+                'user_role' => $user->role,
+                'is_active' => $user->is_active,
                 'email_verified' => $user->email_verified_at ? 'sim' : 'não',
-            ]);
+                'password_hash_start' => substr($user->password, 0, 20),
+            ];
+            Log::info('Usuário encontrado', $userDebug);
             
             // Testar senha manualmente
-            if (Hash::check($credentials['password'], $user->password)) {
-                Log::info('Senha correta - verificando Auth::attempt');
-            } else {
-                Log::error('Senha incorreta');
+            $senhaCorreta = Hash::check($credentials['password'], $user->password);
+            Log::info('Teste de senha', [
+                'resultado' => $senhaCorreta ? 'CORRETA' : 'INCORRETA',
+                'password_enviado' => $credentials['password'],
+                'hash_no_banco' => $user->password,
+            ]);
+            
+            if (!$senhaCorreta) {
+                Log::error('❌ Senha incorreta - verifique se o hash está correto');
             }
+            
+            // Verificar se user está ativo
+            if (!$user->is_active) {
+                Log::error('❌ Usuário inativo');
+            }
+            
         } else {
-            Log::error('Usuário não encontrado', [
+            Log::error('❌ Usuário não encontrado', [
+                'email_buscado' => $credentials['email'],
                 'database' => $database,
                 'tenant_initialized' => tenancy()->initialized ? 'sim' : 'não',
             ]);
         }
 
-        if (Auth::attempt($credentials, $request->boolean('remember'))) {
+        // Tentar autenticar
+        Log::info('Chamando Auth::attempt...');
+        
+        $attemptResult = Auth::attempt($credentials, $request->boolean('remember'));
+        
+        Log::info('Auth::attempt resultado', [
+            'sucesso' => $attemptResult ? 'SIM' : 'NÃO',
+            'auth_check' => Auth::check() ? 'sim' : 'não',
+            'auth_user' => Auth::user() ? Auth::user()->email : 'null',
+        ]);
+        
+        if ($attemptResult) {
             $request->session()->regenerate();
             
             // Registrar último acesso
@@ -71,15 +114,16 @@ class LoginController extends Controller
             $user->last_login_ip = $request->ip();
             $user->save();
             
-            Log::info('Login bem-sucedido', [
+            Log::info('✅ LOGIN BEM-SUCEDIDO', [
                 'user_id' => $user->id,
+                'user_email' => $user->email,
                 'ip' => $request->ip(),
             ]);
             
             return redirect()->intended('/dashboard');
         }
 
-        Log::error('Auth::attempt falhou');
+        Log::error('❌ Auth::attempt FALHOU - login negado');
 
         throw ValidationException::withMessages([
             'email' => 'As credenciais fornecidas não correspondem aos nossos registros.',
