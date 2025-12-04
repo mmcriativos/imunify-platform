@@ -13,10 +13,10 @@ return new class extends Migration
     {
         Schema::table('users', function (Blueprint $table) {
             // Papel do usuário no sistema
-            $table->enum('role', ['admin', 'manager', 'operator', 'viewer'])
-                ->default('operator')
+            $table->enum('role', ['master', 'admin', 'user'])
+                ->default('user')
                 ->after('email')
-                ->comment('admin=Administrador master, manager=Gerente, operator=Operador, viewer=Visualizador');
+                ->comment('master=Administrador master, admin=Administrador, user=Usuário comum');
             
             // Status do usuário
             $table->boolean('is_active')->default(true)->after('role');
