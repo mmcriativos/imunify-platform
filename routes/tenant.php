@@ -57,6 +57,10 @@ Route::post('/password/email', [ForgotPasswordController::class, 'sendResetLinkE
 Route::get('/password/reset/{token}', [ResetPasswordController::class, 'showResetForm'])->name('password.reset');
 Route::post('/password/reset', [ResetPasswordController::class, 'reset'])->name('password.update');
 
+// Aceitar Convite (PÚBLICO - não requer autenticação)
+Route::get('/invitation/{token}', [\App\Http\Controllers\Auth\AcceptInvitationController::class, 'show'])->name('invitation.accept');
+Route::post('/invitation/{token}', [\App\Http\Controllers\Auth\AcceptInvitationController::class, 'accept'])->name('invitation.accept.submit');
+
 // Webhook WhatsApp (PÚBLICO - Z-API precisa acessar no contexto do tenant)
 Route::post('/webhook/whatsapp', [WhatsAppWebhookController::class, 'receberResposta'])->name('webhook.whatsapp');
 Route::get('/webhook/whatsapp/teste', [WhatsAppWebhookController::class, 'teste'])->name('webhook.whatsapp.teste');
@@ -95,6 +99,12 @@ Route::middleware(['auth', 'tenant.access'])->group(function () {
         Route::get('/profile', [\App\Http\Controllers\ProfileController::class, 'edit'])->name('profile.edit');
         Route::patch('/profile', [\App\Http\Controllers\ProfileController::class, 'update'])->name('profile.update');
         Route::delete('/profile', [\App\Http\Controllers\ProfileController::class, 'destroy'])->name('profile.destroy');
+        
+        // Convites de Usuário (apenas master)
+        Route::get('/invitations', [\App\Http\Controllers\UserInvitationController::class, 'index'])->name('invitations.index');
+        Route::post('/invitations', [\App\Http\Controllers\UserInvitationController::class, 'store'])->name('invitations.store');
+        Route::delete('/invitations/{invitation}', [\App\Http\Controllers\UserInvitationController::class, 'destroy'])->name('invitations.destroy');
+        Route::get('/invitations/{invitation}/copy', [\App\Http\Controllers\UserInvitationController::class, 'copyLink'])->name('invitations.copy');
         
         // Gerenciamento de Usuários (apenas admin - verificação feita no controller)
         Route::resource('users', \App\Http\Controllers\UserManagementController::class);
