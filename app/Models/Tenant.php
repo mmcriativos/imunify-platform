@@ -13,6 +13,42 @@ class Tenant extends BaseTenant implements TenantWithDatabase
     use HasDatabase, HasDomains;
 
     /**
+     * Campos que devem ser salvos nas colunas da tabela (não no JSON 'data')
+     */
+    public static function getCustomColumns(): array
+    {
+        return [
+            'id',
+            'plan_id', 
+            'clinic_name',
+            'cnpj',
+            'phone',
+            'email',
+            'address',
+            'city', 
+            'state',
+            'zip_code',
+            'whatsapp_api_url',
+            'whatsapp_instance',
+            'whatsapp_token',
+            'whatsapp_client_token',
+            'whatsapp_enabled',
+            'logo_url',
+            'primary_color',
+            'timezone',
+            'status',
+            'trial_ends_at',
+            'grace_period_ends_at',
+            'suspended_at',
+            'archived_at',
+            'subscription_ends_at',
+            'cnes',
+            'crm',
+            'sipni_config',
+        ];
+    }
+
+    /**
      * The attributes that are mass assignable.
      *
      * @var array
