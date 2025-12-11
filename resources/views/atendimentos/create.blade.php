@@ -1240,36 +1240,106 @@ function submitarFormulario() {
             body: formData,
             headers: {
                 'X-Requested-With': 'XMLHttpRequest',
-                'Accept': 'application/json, text/html'
+                'Accept': 'application/json'
             },
-            credentials: 'same-origin',
-            redirect: 'follow'
+            credentials: 'same-origin'
         })
-        .then(response => {
-            console.log('📨 Resposta recebida:', response.status);
+        .then(async response => {
+            console.log('📨 Resposta recebida:', response.status, response.statusText);
+            console.log('📨 URL da resposta:', response.url);
+            
+            const contentType = response.headers.get('content-type');
+            console.log('📨 Content-Type:', contentType);
+            
+            // Tentar ler a resposta
+            const responseText = await response.text();
+            console.log('📨 Resposta (primeiros 500 chars):', responseText.substring(0, 500));
             
             if (response.redirected) {
                 console.log('🔄 Redirecionando para:', response.url);
+                
+                // Se redirecionou para create, houve erro de validação
+                if (response.url.includes('/create')) {
+                    console.error('❌ Redirecionou para create - ERRO DE VALIDAÇÃO!');
+                    
+                    // Tentar encontrar erros na resposta
+                    try {
+                        const parser = new DOMParser();
+                        const doc = parser.parseFromString(responseText, 'text/html');
+                        const errors = doc.querySelectorAll('.text-red-500, .alert-danger, .error');
+                        
+                        if (errors.length > 0) {
+                            console.error('❌ Erros encontrados na página:');
+                            errors.forEach(error => {
+                                console.error('  -', error.textContent.trim());
+                                showNotification(error.textContent.trim(), 'error');
+                            });
+                        } else {
+                            showNotification('❌ Erro de validação. Verifique os campos.', 'error');
+                        }
+                    } catch (e) {
+                        console.error('Erro ao parsear resposta:', e);
+                    }
+                    
+                    // Reabilitar botão
+                    if (btn) {
+                        btn.disabled = false;
+                        btn.innerHTML = `
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                            </svg>
+                            Registrar Atendimento
+                        `;
+                    }
+                    return;
+                }
+                
                 window.location.href = response.url;
                 return;
             }
             
-            if (response.ok) {
-                return response.text().then(html => {
-                    console.log('✅ Resposta OK recebida');
-                    // Se retornou HTML, redirecionar ou exibir
-                    if (html.includes('<!DOCTYPE') || html.includes('<html')) {
-                        console.log('📄 HTML recebido, recarregando página...');
-                        window.location.reload();
-                    } else {
-                        console.log('✅ Sucesso! Redirecionando...');
-                        window.location.href = form.action.replace('/atendimentos', '/atendimentos');
+            // Tentar parsear como JSON
+            try {
+                const data = JSON.parse(responseText);
+                console.log('📦 JSON recebido:', data);
+                
+                if (data.errors) {
+                    console.error('❌ Erros de validação:', data.errors);
+                    Object.keys(data.errors).forEach(field => {
+                        data.errors[field].forEach(error => {
+                            console.error(`  ${field}: ${error}`);
+                            showNotification(`❌ ${field}: ${error}`, 'error');
+                        });
+                    });
+                    
+                    // Reabilitar botão
+                    if (btn) {
+                        btn.disabled = false;
+                        btn.innerHTML = `
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                            </svg>
+                            Registrar Atendimento
+                        `;
                     }
-                });
+                    return;
+                }
+                
+                if (data.message) {
+                    console.error('❌ Mensagem de erro:', data.message);
+                    showNotification('❌ ' + data.message, 'error');
+                }
+            } catch (e) {
+                // Não é JSON, provavelmente HTML
+                console.log('Não é JSON, é HTML');
             }
             
-            // Se chegou aqui, houve algum erro
-            throw new Error(`Erro HTTP: ${response.status}`);
+            if (response.ok) {
+                console.log('✅ Sucesso! Redirecionando...');
+                window.location.href = form.action.replace('/atendimentos', '/atendimentos');
+            } else {
+                throw new Error(`Erro HTTP: ${response.status}`);
+            }
         })
         .catch(error => {
             console.error('❌ Erro na requisição:', error);
