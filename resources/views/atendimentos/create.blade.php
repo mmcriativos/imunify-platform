@@ -1215,25 +1215,14 @@ function submitarFormulario() {
     
     console.log('✅ Todas as validações passaram! Enviando formulário...');
     
-    // Submeter o formulário
+    // SOLUÇÃO: Usar Fetch API ao invés de form.submit()
+    // Isso contorna problemas com TomSelect e outros listeners
     try {
-        // Obter botão submit oculto
-        const hiddenSubmit = document.getElementById('hiddenSubmitBtn');
+        console.log('🚀 Enviando via Fetch API...');
         
-        // Tentar requestSubmit() primeiro (mais moderno e correto)
-        if (typeof form.requestSubmit === 'function' && hiddenSubmit) {
-            console.log('🚀 Usando form.requestSubmit() com botão oculto...');
-            form.requestSubmit(hiddenSubmit);
-        } else if (typeof form.requestSubmit === 'function') {
-            console.log('🚀 Usando form.requestSubmit() sem botão...');
-            form.requestSubmit();
-        } else {
-            console.log('🚀 Usando form.submit() (fallback)...');
-            form.submit();
-        }
-        console.log('✅ Comando de submit executado!');
+        const formData = new FormData(form);
         
-        // Desabilitar botão para evitar duplo clique
+        // Mostrar loading no botão
         const btn = document.getElementById('btnSubmitAtendimento');
         if (btn) {
             btn.disabled = true;
@@ -1245,6 +1234,58 @@ function submitarFormulario() {
                 Enviando...
             `;
         }
+        
+        fetch(form.action, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json, text/html'
+            },
+            credentials: 'same-origin',
+            redirect: 'follow'
+        })
+        .then(response => {
+            console.log('📨 Resposta recebida:', response.status);
+            
+            if (response.redirected) {
+                console.log('🔄 Redirecionando para:', response.url);
+                window.location.href = response.url;
+                return;
+            }
+            
+            if (response.ok) {
+                return response.text().then(html => {
+                    console.log('✅ Resposta OK recebida');
+                    // Se retornou HTML, redirecionar ou exibir
+                    if (html.includes('<!DOCTYPE') || html.includes('<html')) {
+                        console.log('📄 HTML recebido, recarregando página...');
+                        window.location.reload();
+                    } else {
+                        console.log('✅ Sucesso! Redirecionando...');
+                        window.location.href = form.action.replace('/atendimentos', '/atendimentos');
+                    }
+                });
+            }
+            
+            // Se chegou aqui, houve algum erro
+            throw new Error(`Erro HTTP: ${response.status}`);
+        })
+        .catch(error => {
+            console.error('❌ Erro na requisição:', error);
+            showNotification('❌ Erro ao enviar: ' + error.message, 'error');
+            
+            // Reabilitar botão
+            if (btn) {
+                btn.disabled = false;
+                btn.innerHTML = `
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                    </svg>
+                    Registrar Atendimento
+                `;
+            }
+        });
         
     } catch (error) {
         console.error('❌ Erro ao enviar formulário:', error);
