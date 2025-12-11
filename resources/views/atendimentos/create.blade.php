@@ -810,6 +810,7 @@
                             Cancelar
                         </a>
                         <button type="submit" 
+                                id="btnSubmitAtendimento"
                                 class="flex items-center justify-center gap-2 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-bold py-3 px-8 rounded-xl shadow-lg transition duration-300 transform hover:scale-105">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
@@ -1123,6 +1124,8 @@ document.addEventListener('DOMContentLoaded', () => {
     if (form) {
         form.addEventListener('submit', function(e) {
             console.log('🚀 Formulário sendo enviado...');
+            console.log('📋 Action do form:', form.action);
+            console.log('📋 Method do form:', form.method);
             
             // Validar se há pelo menos uma vacina
             const vacinas = document.querySelectorAll('.vacina-item');
@@ -1181,9 +1184,32 @@ document.addEventListener('DOMContentLoaded', () => {
             const tipoInput = document.querySelector('input[name="tipo"]:checked');
             console.log('🏥 Tipo:', tipoInput?.value);
             
+            // Verificar CSRF token
+            const csrfToken = form.querySelector('input[name="_token"]');
+            console.log('🔐 CSRF Token presente:', !!csrfToken);
+            if (csrfToken) {
+                console.log('🔐 CSRF Token:', csrfToken.value.substring(0, 10) + '...');
+            }
+            
             console.log('✅ Formulário validado! Enviando...');
-            return true;
+            console.log('🎯 FormData sendo enviado:', new FormData(form));
+            
+            // Debug: Verificar se há outros listeners
+            console.log('🔍 Listeners no form:', getEventListeners ? getEventListeners(form) : 'getEventListeners não disponível');
+            
+            // Não prevenir o envio - deixar o formulário submeter naturalmente
+            // Se chegou aqui, está tudo OK - o navegador vai enviar o form
         });
+        
+        // Listener adicional no botão de submit para debug
+        const btnSubmit = document.getElementById('btnSubmitAtendimento');
+        if (btnSubmit) {
+            btnSubmit.addEventListener('click', function(clickEvent) {
+                console.log('🖱️ Botão de submit clicado!');
+                console.log('🖱️ Tipo do botão:', btnSubmit.type);
+                console.log('🖱️ Form associado:', btnSubmit.form);
+            });
+        }
     }
 });
 
