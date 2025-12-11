@@ -36,33 +36,55 @@ class AtendimentoController extends Controller
 
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'data' => 'required|date',
-            'paciente_id' => 'required|exists:pacientes,id',
-            'tipo' => 'required|in:clinica,domiciliar',
-            'cidade_id' => 'required_if:tipo,domiciliar|nullable|exists:cidades,id',
-            'cep' => 'nullable|string|max:9',
-            'logradouro' => 'nullable|string|max:255',
-            'numero' => 'nullable|string|max:20',
-            'bairro' => 'nullable|string|max:100',
-            'complemento' => 'nullable|string|max:100',
-            'endereco_atendimento' => 'nullable|string|max:255',
-            'observacoes' => 'nullable|string',
-            'vacinas' => 'required|array|min:1',
-            'vacinas.*.vacina_id' => 'required|exists:vacinas,id',
-            'vacinas.*.quantidade' => 'required|integer|min:1',
-            'vacinas.*.valor_unitario' => 'required|numeric|min:0',
-            'vacinas.*.lote' => 'nullable|string|max:100',
-            'vacinas.*.validade' => 'nullable|date',
-        ]);
+        \Log::info('=== INÍCIO STORE ATENDIMENTO ===');
+        \Log::info('Método HTTP: ' . $request->method());
+        \Log::info('URL: ' . $request->fullUrl());
+        \Log::info('IP: ' . $request->ip());
+        \Log::info('User Agent: ' . $request->userAgent());
+        \Log::info('Dados recebidos:', $request->all());
+        
+        try {
+            \Log::info('Iniciando validação...');
+            
+            $validated = $request->validate([
+                'data' => 'required|date',
+                'paciente_id' => 'required|exists:pacientes,id',
+                'tipo' => 'required|in:clinica,domiciliar',
+                'cidade_id' => 'required_if:tipo,domiciliar|nullable|exists:cidades,id',
+                'cep' => 'nullable|string|max:9',
+                'logradouro' => 'nullable|string|max:255',
+                'numero' => 'nullable|string|max:20',
+                'bairro' => 'nullable|string|max:100',
+                'complemento' => 'nullable|string|max:100',
+                'endereco_atendimento' => 'nullable|string|max:255',
+                'observacoes' => 'nullable|string',
+                'vacinas' => 'required|array|min:1',
+                'vacinas.*.vacina_id' => 'required|exists:vacinas,id',
+                'vacinas.*.quantidade' => 'required|integer|min:1',
+                'vacinas.*.valor_unitario' => 'required|numeric|min:0',
+                'vacinas.*.lote' => 'nullable|string|max:100',
+                'vacinas.*.validade' => 'nullable|date',
+            ]);
+            
+            \Log::info('✅ Validação passou!');
+            \Log::info('Dados validados:', $validated);
+            
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            \Log::error('❌ ERRO DE VALIDAÇÃO:');
+            \Log::error($e->errors());
+            throw $e;
+        }
 
         DB::beginTransaction();
         try {
+            \Log::info('Transaction iniciada');
+            
             // Calcular valor total
             $valorTotal = 0;
             foreach ($validated['vacinas'] as $vacina) {
                 $valorTotal += $vacina['quantidade'] * $vacina['valor_unitario'];
             }
+            \Log::info('Valor total calculado: ' . $valorTotal);
 
             // Construir endereço completo a partir dos campos separados (se fornecidos)
             $enderecoAtendimento = $validated['endereco_atendimento'] ?? null;
@@ -82,6 +104,8 @@ class AtendimentoController extends Controller
                 }
             }
 
+            \Log::info('Criando atendimento...');
+            
             // Criar atendimento
             $atendimento = Atendimento::create([
                 'data' => $validated['data'],
@@ -91,10 +115,13 @@ class AtendimentoController extends Controller
                 'endereco_atendimento' => $enderecoAtendimento,
                 'valor_total' => $valorTotal,
                 'observacoes' => $validated['observacoes'] ?? null,
-                'usuario_id' => Auth::id() ?? 1, // Temporário até implementar auth
+                'usuario_id' => Auth::id() ?? 1,
             ]);
+            
+            \Log::info('✅ Atendimento criado: ID ' . $atendimento->id);
 
             // Adicionar vacinas
+            \Log::info('Adicionando vacinas...');
             foreach ($validated['vacinas'] as $vacinaData) {
                 $valorTotalItem = $vacinaData['quantidade'] * $vacinaData['valor_unitario'];
                 
@@ -106,9 +133,12 @@ class AtendimentoController extends Controller
                     'validade' => $vacinaData['validade'] ?? null,
                 ]);
             }
+            \Log::info('✅ Vacinas vinculadas');
 
             // Criar lançamento financeiro automático
             if ($valorTotal > 0) {
+                \Log::info('Criando lançamento financeiro...');
+                
                 // Buscar categoria de "Atendimentos" ou criar se não existir
                 $categoria = CategoriaFinanceira::firstOrCreate(
                     ['nome' => 'Atendimentos', 'tipo' => 'receita'],
@@ -133,15 +163,24 @@ class AtendimentoController extends Controller
                     'usuario_id' => Auth::id() ?? 1,
                     'status' => 'confirmado',
                 ]);
+                
+                \Log::info('✅ Lançamento financeiro criado');
             }
 
             DB::commit();
+            \Log::info('✅ Transaction comitada');
+            \Log::info('Redirecionando para: atendimentos.show, ID: ' . $atendimento->id);
 
             return redirect()->route('atendimentos.show', $atendimento)
                 ->with('success', 'Atendimento registrado com sucesso!');
 
         } catch (\Exception $e) {
             DB::rollBack();
+            \Log::error('❌ ERRO ao criar atendimento:');
+            \Log::error('Mensagem: ' . $e->getMessage());
+            \Log::error('Arquivo: ' . $e->getFile() . ':' . $e->getLine());
+            \Log::error('Stack trace: ' . $e->getTraceAsString());
+            
             return back()->withInput()
                 ->with('error', 'Erro ao registrar atendimento: ' . $e->getMessage());
         }
