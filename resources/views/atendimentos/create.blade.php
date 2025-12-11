@@ -417,12 +417,12 @@
                                 Data do Atendimento *
                             </label>
                             <div class="date-input-container">
-                                <input type="text" name="data" id="data" required
+                                <input type="text" id="data_visual" required
                                        value="{{ old('data', date('d/m/Y')) }}"
                                        placeholder="Selecione a data..."
                                        class="date-input-custom"
                                        readonly>
-                                <input type="hidden" name="data_formatted" id="data_formatted" value="{{ old('data', date('Y-m-d')) }}">
+                                <input type="hidden" name="data" id="data" value="{{ old('data', date('Y-m-d')) }}">
                                 <svg class="w-5 h-5 date-input-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
                                 </svg>
@@ -949,11 +949,11 @@
 <script>
 // Configurar datepicker
 document.addEventListener('DOMContentLoaded', function() {
-    const dataInput = document.getElementById('data');
-    const dataFormatted = document.getElementById('data_formatted');
+    const dataVisual = document.getElementById('data_visual');
+    const dataHidden = document.getElementById('data');
     
-    if (dataInput) {
-        flatpickr(dataInput, {
+    if (dataVisual && dataHidden) {
+        flatpickr(dataVisual, {
             locale: 'pt',
             dateFormat: 'd/m/Y',
             defaultDate: new Date(),
@@ -965,7 +965,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     const year = date.getFullYear();
                     const month = String(date.getMonth() + 1).padStart(2, '0');
                     const day = String(date.getDate()).padStart(2, '0');
-                    dataFormatted.value = `${year}-${month}-${day}`;
+                    dataHidden.value = `${year}-${month}-${day}`;
                 }
             },
             onReady: function(selectedDates, dateStr, instance) {
@@ -975,7 +975,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     const year = date.getFullYear();
                     const month = String(date.getMonth() + 1).padStart(2, '0');
                     const day = String(date.getDate()).padStart(2, '0');
-                    dataFormatted.value = `${year}-${month}-${day}`;
+                    dataHidden.value = `${year}-${month}-${day}`;
                 }
             }
         });
@@ -1116,19 +1116,6 @@ document.addEventListener('DOMContentLoaded', () => {
         vacinasAntigas.forEach((vacinaData) => adicionarVacina(vacinaData));
     } else {
         adicionarVacina();
-    }
-    
-    // Interceptar envio do form para usar a data formatada
-    const form = document.getElementById('formAtendimento');
-    if (form) {
-        form.addEventListener('submit', function(e) {
-            const dataFormatted = document.getElementById('data_formatted');
-            const dataInput = document.getElementById('data');
-            if (dataFormatted && dataInput) {
-                dataInput.name = 'data_old'; // Remove o name do campo visual
-                dataFormatted.name = 'data'; // Adiciona o name no campo oculto
-            }
-        });
     }
 });
 
