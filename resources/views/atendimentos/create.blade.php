@@ -809,8 +809,9 @@
                             </svg>
                             Cancelar
                         </a>
-                        <button type="submit" 
+                        <button type="button"
                                 id="btnSubmitAtendimento"
+                                onclick="submitarFormulario()"
                                 class="flex items-center justify-center gap-2 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-bold py-3 px-8 rounded-xl shadow-lg transition duration-300 transform hover:scale-105">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
@@ -1118,100 +1119,108 @@ document.addEventListener('DOMContentLoaded', () => {
     } else {
         adicionarVacina();
     }
-    
-    // Validar formulário antes do envio
-    const form = document.getElementById('formAtendimento');
-    if (form) {
-        form.addEventListener('submit', function(e) {
-            console.log('🚀 Formulário sendo enviado...');
-            console.log('📋 Action do form:', form.action);
-            console.log('📋 Method do form:', form.method);
-            
-            // Validar se há pelo menos uma vacina
-            const vacinas = document.querySelectorAll('.vacina-item');
-            if (vacinas.length === 0) {
-                e.preventDefault();
-                showNotification('❌ Adicione pelo menos uma vacina ao atendimento!', 'error');
-                console.error('❌ Nenhuma vacina adicionada');
-                return false;
-            }
-            
-            // Validar se todas as vacinas têm valores válidos
-            let todasValidas = true;
-            vacinas.forEach((item, index) => {
-                const vacinaSelect = item.querySelector('.vacina-select');
-                const quantidadeInput = item.querySelector('.quantidade-input');
-                const valorInput = item.querySelector('.valor-input');
-                
-                if (!vacinaSelect.value) {
-                    todasValidas = false;
-                    console.error(`❌ Vacina ${index + 1}: Nenhuma vacina selecionada`);
-                }
-                
-                if (!quantidadeInput.value || quantidadeInput.value < 1) {
-                    todasValidas = false;
-                    console.error(`❌ Vacina ${index + 1}: Quantidade inválida`);
-                }
-                
-                if (!valorInput.value || valorInput.value < 0) {
-                    todasValidas = false;
-                    console.error(`❌ Vacina ${index + 1}: Valor inválido`);
-                }
-                
-                console.log(`✅ Vacina ${index + 1}:`, {
-                    vacina_id: vacinaSelect.value,
-                    quantidade: quantidadeInput.value,
-                    valor: valorInput.value
-                });
-            });
-            
-            if (!todasValidas) {
-                e.preventDefault();
-                showNotification('❌ Preencha todos os campos das vacinas corretamente!', 'error');
-                console.error('❌ Formulário com dados inválidos');
-                return false;
-            }
-            
-            // Verificar data
-            const dataHidden = document.getElementById('data');
-            console.log('📅 Data:', dataHidden.value);
-            
-            // Verificar paciente
-            const pacienteSelect = document.getElementById('paciente_id');
-            console.log('👤 Paciente:', pacienteSelect.value);
-            
-            // Verificar tipo
-            const tipoInput = document.querySelector('input[name="tipo"]:checked');
-            console.log('🏥 Tipo:', tipoInput?.value);
-            
-            // Verificar CSRF token
-            const csrfToken = form.querySelector('input[name="_token"]');
-            console.log('🔐 CSRF Token presente:', !!csrfToken);
-            if (csrfToken) {
-                console.log('🔐 CSRF Token:', csrfToken.value.substring(0, 10) + '...');
-            }
-            
-            console.log('✅ Formulário validado! Enviando...');
-            console.log('🎯 FormData sendo enviado:', new FormData(form));
-            
-            // Debug: Verificar se há outros listeners
-            console.log('🔍 Listeners no form:', getEventListeners ? getEventListeners(form) : 'getEventListeners não disponível');
-            
-            // Não prevenir o envio - deixar o formulário submeter naturalmente
-            // Se chegou aqui, está tudo OK - o navegador vai enviar o form
-        });
-        
-        // Listener adicional no botão de submit para debug
-        const btnSubmit = document.getElementById('btnSubmitAtendimento');
-        if (btnSubmit) {
-            btnSubmit.addEventListener('click', function(clickEvent) {
-                console.log('🖱️ Botão de submit clicado!');
-                console.log('🖱️ Tipo do botão:', btnSubmit.type);
-                console.log('🖱️ Form associado:', btnSubmit.form);
-            });
-        }
-    }
 });
+
+// Função para submeter o formulário manualmente (evita conflitos com TomSelect)
+function submitarFormulario() {
+    console.log('🔥 submitarFormulario() chamada!');
+    
+    const form = document.getElementById('formAtendimento');
+    if (!form) {
+        console.error('❌ Formulário não encontrado!');
+        return;
+    }
+    
+    console.log('📋 Form encontrado:', form);
+    console.log('📋 Action:', form.action);
+    console.log('📋 Method:', form.method);
+    
+    // Validar se há pelo menos uma vacina
+    const vacinas = document.querySelectorAll('.vacina-item');
+    console.log('💉 Total de vacinas:', vacinas.length);
+    
+    if (vacinas.length === 0) {
+        showNotification('❌ Adicione pelo menos uma vacina ao atendimento!', 'error');
+        console.error('❌ Nenhuma vacina adicionada');
+        return;
+    }
+    
+    // Validar campos obrigatórios
+    const dataHidden = document.getElementById('data');
+    const pacienteSelect = document.getElementById('paciente_id');
+    const tipoInput = document.querySelector('input[name="tipo"]:checked');
+    
+    console.log('📅 Data:', dataHidden?.value);
+    console.log('👤 Paciente:', pacienteSelect?.value);
+    console.log('🏥 Tipo:', tipoInput?.value);
+    
+    if (!dataHidden?.value) {
+        showNotification('❌ Selecione uma data!', 'error');
+        return;
+    }
+    
+    if (!pacienteSelect?.value) {
+        showNotification('❌ Selecione um paciente!', 'error');
+        return;
+    }
+    
+    if (!tipoInput?.value) {
+        showNotification('❌ Selecione o tipo de atendimento!', 'error');
+        return;
+    }
+    
+    // Validar vacinas
+    let todasValidas = true;
+    vacinas.forEach((item, index) => {
+        const vacinaSelect = item.querySelector('.vacina-select');
+        const quantidadeInput = item.querySelector('.quantidade-input');
+        const valorInput = item.querySelector('.valor-input');
+        
+        if (!vacinaSelect?.value || !quantidadeInput?.value || !valorInput?.value) {
+            todasValidas = false;
+            console.error(`❌ Vacina ${index + 1}: Dados incompletos`);
+        }
+        
+        console.log(`✅ Vacina ${index + 1}:`, {
+            vacina_id: vacinaSelect?.value,
+            quantidade: quantidadeInput?.value,
+            valor: valorInput?.value
+        });
+    });
+    
+    if (!todasValidas) {
+        showNotification('❌ Preencha todos os campos das vacinas corretamente!', 'error');
+        return;
+    }
+    
+    // Verificar CSRF token
+    const csrfToken = form.querySelector('input[name="_token"]');
+    if (!csrfToken) {
+        console.error('❌ CSRF Token não encontrado!');
+        showNotification('❌ Erro de segurança: Token CSRF ausente!', 'error');
+        return;
+    }
+    
+    console.log('🔐 CSRF Token:', csrfToken.value.substring(0, 10) + '...');
+    
+    // Mostrar todos os dados que serão enviados
+    const formData = new FormData(form);
+    console.log('📦 Dados a serem enviados:');
+    for (let [key, value] of formData.entries()) {
+        console.log(`   ${key}: ${value}`);
+    }
+    
+    console.log('✅ Todas as validações passaram! Enviando formulário...');
+    
+    // Submeter o formulário
+    try {
+        form.submit();
+        console.log('🚀 form.submit() executado!');
+    } catch (error) {
+        console.error('❌ Erro ao enviar formulário:', error);
+        showNotification('❌ Erro ao enviar formulário: ' + error.message, 'error');
+    }
+}
 
 // Função para buscar CEP
 function setupCepSearch() {
