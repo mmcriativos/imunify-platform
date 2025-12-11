@@ -143,6 +143,9 @@ Route::middleware(['auth', 'tenant.access'])->group(function () {
         
         // Atendimentos
         Route::resource('atendimentos', AtendimentoController::class);
+        Route::get('/atendimentos-teste-simples', function() {
+            return view('atendimentos.teste-simples');
+        })->name('atendimentos.teste.simples');
         
         // Cidades
         Route::resource('cidades', CidadeController::class);
