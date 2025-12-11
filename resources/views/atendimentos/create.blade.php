@@ -1117,6 +1117,74 @@ document.addEventListener('DOMContentLoaded', () => {
     } else {
         adicionarVacina();
     }
+    
+    // Validar formulário antes do envio
+    const form = document.getElementById('formAtendimento');
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            console.log('🚀 Formulário sendo enviado...');
+            
+            // Validar se há pelo menos uma vacina
+            const vacinas = document.querySelectorAll('.vacina-item');
+            if (vacinas.length === 0) {
+                e.preventDefault();
+                showNotification('❌ Adicione pelo menos uma vacina ao atendimento!', 'error');
+                console.error('❌ Nenhuma vacina adicionada');
+                return false;
+            }
+            
+            // Validar se todas as vacinas têm valores válidos
+            let todasValidas = true;
+            vacinas.forEach((item, index) => {
+                const vacinaSelect = item.querySelector('.vacina-select');
+                const quantidadeInput = item.querySelector('.quantidade-input');
+                const valorInput = item.querySelector('.valor-input');
+                
+                if (!vacinaSelect.value) {
+                    todasValidas = false;
+                    console.error(`❌ Vacina ${index + 1}: Nenhuma vacina selecionada`);
+                }
+                
+                if (!quantidadeInput.value || quantidadeInput.value < 1) {
+                    todasValidas = false;
+                    console.error(`❌ Vacina ${index + 1}: Quantidade inválida`);
+                }
+                
+                if (!valorInput.value || valorInput.value < 0) {
+                    todasValidas = false;
+                    console.error(`❌ Vacina ${index + 1}: Valor inválido`);
+                }
+                
+                console.log(`✅ Vacina ${index + 1}:`, {
+                    vacina_id: vacinaSelect.value,
+                    quantidade: quantidadeInput.value,
+                    valor: valorInput.value
+                });
+            });
+            
+            if (!todasValidas) {
+                e.preventDefault();
+                showNotification('❌ Preencha todos os campos das vacinas corretamente!', 'error');
+                console.error('❌ Formulário com dados inválidos');
+                return false;
+            }
+            
+            // Verificar data
+            const dataHidden = document.getElementById('data');
+            console.log('📅 Data:', dataHidden.value);
+            
+            // Verificar paciente
+            const pacienteSelect = document.getElementById('paciente_id');
+            console.log('👤 Paciente:', pacienteSelect.value);
+            
+            // Verificar tipo
+            const tipoInput = document.querySelector('input[name="tipo"]:checked');
+            console.log('🏥 Tipo:', tipoInput?.value);
+            
+            console.log('✅ Formulário validado! Enviando...');
+            return true;
+        });
+    }
 });
 
 // Função para buscar CEP
