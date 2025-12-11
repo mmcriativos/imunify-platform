@@ -392,6 +392,9 @@
         <form action="{{ route('atendimentos.store') }}" method="POST" id="formAtendimento">
             @csrf
             
+            <!-- Botão submit oculto para requestSubmit() funcionar -->
+            <button type="submit" id="hiddenSubmitBtn" style="display: none;" aria-hidden="true"></button>
+            
             <!-- Card de Dados Básicos -->
             <div class="bg-white shadow-xl rounded-xl sm:rounded-2xl overflow-hidden border border-gray-100 mb-4 sm:mb-6">
                 <div class="bg-gradient-to-r from-purple-500 to-indigo-600 p-4 sm:p-5 lg:p-6">
@@ -1214,8 +1217,35 @@ function submitarFormulario() {
     
     // Submeter o formulário
     try {
-        form.submit();
-        console.log('🚀 form.submit() executado!');
+        // Obter botão submit oculto
+        const hiddenSubmit = document.getElementById('hiddenSubmitBtn');
+        
+        // Tentar requestSubmit() primeiro (mais moderno e correto)
+        if (typeof form.requestSubmit === 'function' && hiddenSubmit) {
+            console.log('🚀 Usando form.requestSubmit() com botão oculto...');
+            form.requestSubmit(hiddenSubmit);
+        } else if (typeof form.requestSubmit === 'function') {
+            console.log('🚀 Usando form.requestSubmit() sem botão...');
+            form.requestSubmit();
+        } else {
+            console.log('🚀 Usando form.submit() (fallback)...');
+            form.submit();
+        }
+        console.log('✅ Comando de submit executado!');
+        
+        // Desabilitar botão para evitar duplo clique
+        const btn = document.getElementById('btnSubmitAtendimento');
+        if (btn) {
+            btn.disabled = true;
+            btn.innerHTML = `
+                <svg class="animate-spin w-5 h-5 mr-2 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Enviando...
+            `;
+        }
+        
     } catch (error) {
         console.error('❌ Erro ao enviar formulário:', error);
         showNotification('❌ Erro ao enviar formulário: ' + error.message, 'error');
