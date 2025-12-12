@@ -305,9 +305,12 @@ class AtendimentoController extends Controller
         try {
             \Log::info('🗑️ Iniciando exclusão do atendimento ID: ' . $atendimento->id);
             
-            // 1. Excluir lançamentos financeiros relacionados
-            $lancamentosExcluidos = Lancamento::where('atendimento_id', $atendimento->id)->delete();
-            \Log::info("   ✅ Excluídos {$lancamentosExcluidos} lançamento(s) financeiro(s)");
+            // 1. Excluir PERMANENTEMENTE lançamentos financeiros relacionados (forceDelete ignora SoftDeletes)
+            $lancamentos = Lancamento::where('atendimento_id', $atendimento->id)->get();
+            foreach ($lancamentos as $lancamento) {
+                $lancamento->forceDelete(); // Exclusão permanente
+            }
+            \Log::info("   ✅ Excluídos {$lancamentos->count()} lançamento(s) financeiro(s)");
             
             // 2. Desvincular vacinas (pivot table)
             $vacinasDesvinculadas = $atendimento->vacinas()->detach();
