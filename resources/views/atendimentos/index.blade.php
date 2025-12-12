@@ -192,6 +192,13 @@
                                     </svg>
                                     Editar
                                 </a>
+                                <button onclick="confirmarExclusao({{ $atendimento->id }}, '{{ $atendimento->paciente->nome }}')"
+                                   class="inline-flex items-center gap-1 bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 text-white font-semibold px-3 py-1.5 rounded-lg transition duration-300 transform hover:scale-105">
+                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                    </svg>
+                                    Excluir
+                                </button>
                             </div>
                         </td>
                     </tr>
@@ -235,5 +242,89 @@
         </div>
     @endif
 </div>
+
+<!-- Modal de Confirmação de Exclusão -->
+<div id="modalExclusao" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full mx-4 transform transition-all">
+        <div class="p-6">
+            <div class="flex items-center justify-center w-16 h-16 mx-auto mb-4 bg-red-100 rounded-full">
+                <svg class="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                </svg>
+            </div>
+            
+            <h3 class="text-xl font-bold text-gray-900 text-center mb-2">
+                Confirmar Exclusão
+            </h3>
+            
+            <p class="text-gray-600 text-center mb-6">
+                Tem certeza que deseja excluir o atendimento do paciente <strong id="nomePaciente"></strong>?
+            </p>
+            
+            <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
+                <p class="text-sm text-yellow-800">
+                    <strong>⚠️ Atenção:</strong> Esta ação não pode ser desfeita. Serão excluídos:
+                </p>
+                <ul class="list-disc list-inside text-sm text-yellow-700 mt-2 space-y-1">
+                    <li>O registro do atendimento</li>
+                    <li>As vacinas aplicadas</li>
+                    <li>Os lançamentos financeiros</li>
+                </ul>
+            </div>
+            
+            <form id="formExclusao" method="POST" class="space-y-3">
+                @csrf
+                @method('DELETE')
+                
+                <button type="submit" 
+                        class="w-full bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 text-white font-semibold py-3 px-4 rounded-lg transition duration-300 transform hover:scale-105">
+                    Sim, Excluir Atendimento
+                </button>
+                
+                <button type="button" 
+                        onclick="fecharModal()"
+                        class="w-full bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-3 px-4 rounded-lg transition duration-300">
+                    Cancelar
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+function confirmarExclusao(id, nomePaciente) {
+    const modal = document.getElementById('modalExclusao');
+    const form = document.getElementById('formExclusao');
+    const nomeElement = document.getElementById('nomePaciente');
+    
+    // Atualizar o nome do paciente
+    nomeElement.textContent = nomePaciente;
+    
+    // Atualizar a action do formulário
+    form.action = `/atendimentos/${id}`;
+    
+    // Mostrar o modal
+    modal.classList.remove('hidden');
+}
+
+function fecharModal() {
+    const modal = document.getElementById('modalExclusao');
+    modal.classList.add('hidden');
+}
+
+// Fechar modal ao clicar fora dele
+document.getElementById('modalExclusao')?.addEventListener('click', function(e) {
+    if (e.target === this) {
+        fecharModal();
+    }
+});
+
+// Fechar modal com ESC
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        fecharModal();
+    }
+});
+</script>
 @endsection
 

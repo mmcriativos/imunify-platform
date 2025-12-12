@@ -1274,7 +1274,7 @@ function submitarFormulario() {
             body: formData,
             headers: {
                 'X-Requested-With': 'XMLHttpRequest',
-                'Accept': 'application/json'
+                'Accept': 'application/json, text/html'
             },
             credentials: 'same-origin'
         })
@@ -1337,6 +1337,23 @@ function submitarFormulario() {
                 const data = JSON.parse(responseText);
                 console.log('📦 JSON recebido:', data);
                 
+                if (data.success === false || data.error) {
+                    console.error('❌ Erro retornado:', data);
+                    showNotification('❌ ' + (data.message || data.error), 'error');
+                    
+                    // Reabilitar botão
+                    if (btn) {
+                        btn.disabled = false;
+                        btn.innerHTML = `
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                            </svg>
+                            Registrar Atendimento
+                        `;
+                    }
+                    return;
+                }
+                
                 if (data.errors) {
                     console.error('❌ Erros de validação:', data.errors);
                     Object.keys(data.errors).forEach(field => {
@@ -1362,6 +1379,18 @@ function submitarFormulario() {
                 if (data.message) {
                     console.error('❌ Mensagem de erro:', data.message);
                     showNotification('❌ ' + data.message, 'error');
+                    
+                    // Reabilitar botão
+                    if (btn) {
+                        btn.disabled = false;
+                        btn.innerHTML = `
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                            </svg>
+                            Registrar Atendimento
+                        `;
+                    }
+                    return;
                 }
             } catch (e) {
                 // Não é JSON, provavelmente HTML

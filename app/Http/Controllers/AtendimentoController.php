@@ -181,8 +181,18 @@ class AtendimentoController extends Controller
             \Log::error('Arquivo: ' . $e->getFile() . ':' . $e->getLine());
             \Log::error('Stack trace: ' . $e->getTraceAsString());
             
+            // Se for requisição AJAX, retornar JSON
+            if ($request->wantsJson() || $request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Erro ao registrar atendimento: ' . $e->getMessage(),
+                    'error' => $e->getMessage()
+                ], 500);
+            }
+            
             return back()->withInput()
-                ->with('error', 'Erro ao registrar atendimento: ' . $e->getMessage());
+                ->with('error', 'Erro ao registrar atendimento: ' . $e->getMessage())
+                ->withErrors(['exception' => $e->getMessage()]);
         }
     }
 
@@ -291,9 +301,33 @@ class AtendimentoController extends Controller
 
     public function destroy(Atendimento $atendimento)
     {
-        $atendimento->delete();
-        
-        return redirect()->route('atendimentos.index')
-            ->with('success', 'Atendimento removido com sucesso!');
+        DB::beginTransaction();
+        try {
+            \Log::info('🗑️ Iniciando exclusão do atendimento ID: ' . $atendimento->id);
+            
+            // 1. Excluir lançamentos financeiros relacionados
+            $lancamentosExcluidos = Lancamento::where('atendimento_id', $atendimento->id)->delete();
+            \Log::info("   ✅ Excluídos {$lancamentosExcluidos} lançamento(s) financeiro(s)");
+            
+            // 2. Desvincular vacinas (pivot table)
+            $vacinasDesvinculadas = $atendimento->vacinas()->detach();
+            \Log::info("   ✅ Desvinculadas {$vacinasDesvinculadas} vacina(s)");
+            
+            // 3. Excluir o atendimento
+            $atendimento->delete();
+            \Log::info('   ✅ Atendimento excluído com sucesso');
+            
+            DB::commit();
+            
+            return redirect()->route('atendimentos.index')
+                ->with('success', 'Atendimento removido com sucesso!');
+                
+        } catch (\Exception $e) {
+            DB::rollBack();
+            \Log::error('❌ Erro ao excluir atendimento: ' . $e->getMessage());
+            
+            return back()
+                ->with('error', 'Erro ao excluir atendimento: ' . $e->getMessage());
+        }
     }
 }
